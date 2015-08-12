@@ -1,0 +1,60 @@
+<head>
+  <title>Prod List</title>
+</head>
+ 
+<body>
+  <div class="container">
+    <header>
+      <h1>Prod List</h1>
+      <form class="new-prod">
+        <input type="text" name="name"  placeholder="name" />
+        <input type="text" name="price" placeholder="price 4.5" />
+        <input type="text" name="image" placeholder="image" />
+        <input type="text" name="volume" placeholder="volume 0.2" />
+        <input type="text" name="type" placeholder="type" />
+        <input type="text" name="description" placeholder="description" />
+        <input type="submit" value="Submit">
+      </form>
+    </header>
+ 
+    <ul>
+      {{#each products}}
+        {{> product}}
+      {{/each}}
+    </ul>
+  </div>
+</body>
+
+ 
+<template name="product">
+	<li class="{{#if checked}}checked{{/if}}">
+    <button class="delete">&times;</button>
+ 
+    
+ 
+    <img src="/images/{{image}}"  style="width:90px;height:90;">
+    <input type="text" value="{{name}}" name="name">
+    <input type="text" value="{{price}}" name="price">
+    <input type="text" value="{{volume}}" name="volume">
+ 
+    <input type="checkbox" {{checked}} class="toggle-checked" />
+  </li>
+ 
+</template>
+
+
+<template name="register">
+    <h2>Register</h2>
+</template>
+
+<template name="home">
+    <p>Welcome to the Todos application.</p>
+</template>
+
+<template name="main">
+    <h1>ProdList</h1>
+    <a href="{{pathFor route='home'}}">Home</a>
+    {{> yield}}
+    <hr />
+    <p>Copyright &copy; Products, 2014-2015.</p>
+</template>                  
