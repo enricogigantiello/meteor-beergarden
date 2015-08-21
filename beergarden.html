@@ -1,9 +1,26 @@
-<head>
-  <title>Prod List</title>
-</head>
+
  
-<body>
-  <div class="container">
+<template name="product">
+
+	 <li class="{{#if checked}}checked{{/if}}">
+      <button class="delete">&times;</button> 
+      <img src="/images/{{image}}"  style="width:90px;height:90;">
+      <input type="text" value="{{name}}" name="name">
+      <input type="text" value="{{price}}" name="price">
+      <input type="text" value="{{volume}}" name="volume">
+      <input type="text" value="{{image}}" name="image">
+      <input type="text" name="type" value="{{type}}" />
+      <input type="text" value="{{description}}" name="description"  />
+      <label >finished</label>
+      <input type="checkbox" {{isfinished}} class="toggle-finished" />
+      <label >sellable</label>
+      <input type="checkbox" {{issellable}} class="toggle-sellable" />
+    </li>
+ </template>
+
+
+<template name="manageProducts">
+<div class="container">
     <header>
       <h1>Prod List</h1>
       <form class="new-prod">
@@ -13,6 +30,8 @@
         <input type="text" name="volume" placeholder="volume 0.2" />
         <input type="text" name="type" placeholder="type" />
         <input type="text" name="description" placeholder="description" />
+        <label >sellable</label>
+        <input type="checkbox" name="sellable" />
         <input type="submit" value="Submit">
       </form>
     </header>
@@ -23,38 +42,87 @@
       {{/each}}
     </ul>
   </div>
-</body>
-
- 
-<template name="product">
-	<li class="{{#if checked}}checked{{/if}}">
-    <button class="delete">&times;</button>
- 
-    
- 
-    <img src="/images/{{image}}"  style="width:90px;height:90;">
-    <input type="text" value="{{name}}" name="name">
-    <input type="text" value="{{price}}" name="price">
-    <input type="text" value="{{volume}}" name="volume">
- 
-    <input type="checkbox" {{checked}} class="toggle-checked" />
-  </li>
- 
 </template>
 
-
-<template name="register">
-    <h2>Register</h2>
-</template>
-
-<template name="home">
-    <p>Welcome to the Todos application.</p>
-</template>
+<template name="home"><p>Welcome to the Todos application.</p></template>
 
 <template name="main">
     <h1>ProdList</h1>
-    <a href="{{pathFor route='home'}}">Home</a>
+    {{> navigation}}
+    
     {{> yield}}
     <hr />
     <p>Copyright &copy; Products, 2014-2015.</p>
-</template>                  
+</template>       
+
+<template name="navigation">
+    <ul>
+        <li><a href="{{pathFor route='home'}}">Home</a></li>
+        <li><a href="{{pathFor route='manageProducts'}}">manage_products</a></li>
+        <li><a href="{{pathFor route='orders'}}">orders</a></li>
+       
+        
+    </ul>
+</template> 
+
+<template name="addOrder">
+    <form>Create a order:
+        <input type="text" placeholder="guest name here..." name="guestName">
+        <input type="text" placeholder="table num here..." name="tableNum">
+        <input type="submit" value="Submit">
+    </form>
+
+</template>  
+
+<template name="orders">
+    <h2>Orders</h2>
+    {{> addOrder}}
+    <br>
+    <ul>
+        {{#each orders}}
+            <a class = "selectOrder" href="/order/{{_id}}">
+              <li>
+                <h2>{{guestName}} Tav:{{tableNum}} Conto:{{bill}}</h2>
+              </li>
+            </a>
+        {{/each}}
+    </ul>
+    
+
+
+
+
+</template>   
+
+
+
+<template name="menu">
+   
+   <ul>
+      {{#each menu_products}}
+          <li class="menu_item " id="{{_id}}" >
+            
+            <img src="/images/{{image}}"  style="width:90px;height:90px;">
+            <input type="text" value="{{name}}" name="name">
+            <input type="text" value="{{volume}}" name="volume">
+            <input type="text" value="{{price}}" name="price">
+            <button class = "add"> add</button> 
+          </li>
+      
+      {{/each}}
+    </ul>
+</template>
+
+<template name="listOrder">
+  <h2>Order: {{guestName}} Table: {{tableNum}}  Bill: {{bill}}</h2>
+  
+  <ul>
+    {{#each items}}
+    <li>{{name}}  :   {{price}}</li>
+    {{/each}}
+      
+  </ul>
+    
+  <h2>Menu</h2>
+    {{> menu}}
+</template>
