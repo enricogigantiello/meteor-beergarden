@@ -26,7 +26,7 @@ if (Meteor.isClient) {
   Template.manageProducts.helpers({
     products: function () {
        //return Products.find();
-      return Products.find({}, {sort: {type: 1, name: 1, price: 1}});
+      return Products.find({}, {sort: {type: 1, served: 1, name: 1, price: 1}});
     }
   });
 
@@ -42,6 +42,7 @@ if (Meteor.isClient) {
       var volume = parseFloat(event.target.volume.tvalue);
       var type = event.target.type.value;
       var description = event.target.description.value;
+      var served = event.target.served.value;
       var sellable = event.target.sellable.checked;
     
       // Insert a task into the collection
@@ -51,6 +52,7 @@ if (Meteor.isClient) {
         image: image,
         volume: volume,
         type: type,
+        served: served,
         description: description,
         finished: false,
         sellable: sellable
@@ -66,6 +68,7 @@ if (Meteor.isClient) {
       event.target.volume.value= "";
       event.target.type.value= "";
       event.target.description.value= "";
+      event.target.served.value= "";
       event.target.sellable.checked= false;
     }
   });
@@ -143,6 +146,12 @@ if (Meteor.isClient) {
     var prod_elem = $(event.target).val();
     Products.update({ _id: documentId }, {$set: { description: prod_elem }});
     //console.log("Task changed to: " + todoItem);
+    },
+    'keyup [name=served]': function(event){
+    var documentId = this._id;
+    var prod_elem = $(event.target).val();
+    Products.update({ _id: documentId }, {$set: { served: prod_elem }});
+    //console.log("Task changed to: " + todoItem);
     }
   });
 
@@ -197,27 +206,77 @@ if (Meteor.isClient) {
     "click .add": function () {
       var selectedOrder = Session.get('selectedOrder');
       
-      if(selectedOrder != null){
-        var item = {
-        product_id:  this._id,
-        name: this.name,
-        volume: this.volume,
-        price:  this.price,
-        image:  this.image, 
-        quantity: 1
       
-      };
-        
-        console.log(item);
-        Orders.update(selectedOrder, {
-          $push: { items: item },
-          $inc: { bill: parseFloat(item.price) }
-        
+      
+      
+      if(selectedOrder != null){
+        //looks for orders with selectedOrder = id that has product_id in the items array
+        cursor = Orders.find({  $and : [  {items: {$elemMatch: {product_id: this._id}}},  {_id: selectedOrder }  ]});
+        if(cursor.count()>0){
+          Orders.update(selectedOrder, {
+            //modify quantity
+            //{user_id : 123456 , "items.item_name" : "my_item_two" } , {$inc : {"items.$.price" : 1} }  
+
+            $inc: { bill: parseFloat(this.price) }
+          
+          });
+
         }
-        );
+        else{
+
+          var item = {
+          product_id:  this._id,
+          name: this.name,
+          volume: this.volume,
+          price:  this.price,
+          image:  this.image, 
+          quantity: 1
+          };
+        
+          console.log(item);
+          Orders.update(selectedOrder, {
+            $push: { items: item },
+            $inc: { bill: parseFloat(item.price) }
+          
+          });
+
+        }
+        
+        //if (addOrder){alert(addOrder.count());}
+
+        
+
       }
       else alert("didn't choose an order");
       
+    }
+
+  });
+
+  Template.listOrder.events({
+    "click .delete": function (){
+      var prod_id= this.product_id;
+      var price = parseFloat(this.price);
+      var quantity = parseInt(this.quantity);
+      
+      var confirm = window.confirm("Delete this order ?");
+      if(confirm){
+        var selectedOrder = Session.get('selectedOrder');
+        //alert( Session.get('selectedOrder'));
+        if (quantity > 1){
+
+          Orders.update(selectedOrder,{$inc: { quantity: -1 }},{ multi: false });
+          Orders.update(selectedOrder,{$inc: { bill: -(price) }},{ multi: false });
+
+        }else{
+
+          Orders.update(selectedOrder,{ $pull: { items: { product_id: prod_id } } },{ multi: false });
+          Orders.update(selectedOrder,{$inc: { bill: -(price) }},{ multi: false });
+
+        }
+
+      
+      }
     }
 
   });
@@ -237,3 +296,6 @@ if(Meteor.isServer){
   Api.addCollection(Products);
   Api.addCollection(Orders);
 }
+
+
+

@@ -1,0 +1,14 @@
+GUI per gestione delle categorie per l'admin
+Utenti con admin, cliente, cameriere
+Login/Registrazione
+Login con Facebook
+Recupera Immagini prodotti in vendita
+Aggiornare Prodotti in vendita
+Aggiungere prodotti non in vendita
+Tasto ingredienti
+Somma Ordini uguali
+
+
+
+fatto
+eliminazione di un ordine

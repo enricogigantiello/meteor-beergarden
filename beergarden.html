@@ -4,17 +4,21 @@
 
 	 <li class="{{#if checked}}checked{{/if}}">
       <button class="delete">&times;</button> 
-      <img src="/images/{{image}}"  style="width:90px;height:90;">
+     
       <input type="text" value="{{name}}" name="name">
       <input type="text" value="{{price}}" name="price">
-      <input type="text" value="{{volume}}" name="volume">
+      
       <input type="text" value="{{image}}" name="image">
+      <input type="text" value="{{volume}}" name="volume">
       <input type="text" name="type" value="{{type}}" />
+      <input type="text" value="{{served}}" name="served"  />
       <input type="text" value="{{description}}" name="description"  />
+      
       <label >finished</label>
       <input type="checkbox" {{isfinished}} class="toggle-finished" />
       <label >sellable</label>
       <input type="checkbox" {{issellable}} class="toggle-sellable" />
+       <img src="/images/{{image}}"  style="width:90px;height:90px;">
     </li>
  </template>
 
@@ -29,6 +33,7 @@
         <input type="text" name="image" placeholder="image" />
         <input type="text" name="volume" placeholder="volume 0.2" />
         <input type="text" name="type" placeholder="type" />
+        <input type="text" name="served" placeholder="served" />
         <input type="text" name="description" placeholder="description" />
         <label >sellable</label>
         <input type="checkbox" name="sellable" />
@@ -82,6 +87,7 @@
         {{#each orders}}
             <a class = "selectOrder" href="/order/{{_id}}">
               <li>
+
                 <h2>{{guestName}} Tav:{{tableNum}} Conto:{{bill}}</h2>
               </li>
             </a>
@@ -118,7 +124,11 @@
   
   <ul>
     {{#each items}}
-    <li>{{name}}  :   {{price}}</li>
+
+    <li>
+       <button class="delete">&times;</button> 
+       {{quantity}}  :  {{name}}  :   {{price}}€
+     </li>
     {{/each}}
       
   </ul>
