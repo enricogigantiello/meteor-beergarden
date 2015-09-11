@@ -2,66 +2,113 @@
  
 <template name="product">
 
-	 <li class="{{#if checked}}checked{{/if}}">
-      <button class="delete">&times;</button> 
+	 
+   <form class="form-inline" role="form">
+    <div class="form-group">
+      <div class="col-xs-1">        
+         <input type="text" class="form-control" value="{{name}}" name="name"  placeholder="name">
+      </div>
+
+      <div class="col-xs-1">      
+       <input type="text" class="form-control" value="{{price}}" name="price" placeholder="price 4.5">
+      </div>
+
+      <div class="col-xs-1">
+        <input type="text" class="form-control" value="{{image}}" name="image" placeholder="image" >
+      </div>
+
+      <div class="col-xs-1">
+         <input type="text" class="form-control" value="{{volume}}" name="volume" placeholder="volume 0.2" >
+      </div>
+
+      <div class="col-xs-1">
+        <input type="text" class="form-control" name="type" value="{{type}}" placeholder="type" />
+      </div>
+
+      <div class="col-xs-1">
+        <input type="text" class="form-control" value="{{served}}" name="served"  placeholder="served" />
+      </div>
+
+      <div class="col-xs-1">
+        <input type="text" class="form-control" value="{{description}}" name="description"  placeholder="description"/>
+      </div>
+
+      <div class="col-xs-1">
+        <input type="text" class="form-control" value="{{menu_name}}" name="menu_name"  placeholder="menu name" />
+    
+      </div>
+       <div class="col-xs-1">       
+      </div>
+
+      <div class="col-xs-1">
+       
+        <label for="finished">finished</label>
+        <input type="checkbox" {{isfinished}}  id="finished" class="toggle-finished" />
+      </div>
+
+      <div class="col-xs-1">
+        <label for="sellable">sellable</label>
+
+        <input type="checkbox" {{issellable}} id="sellable" class="toggle-sellable" />
+      </div>
+
      
-      <input type="text" value="{{name}}" name="name">
-      <input type="text" value="{{price}}" name="price">
+
+      <div class="col-xs-1">
+        <img src="/images/{{image}}"  class="img-responsive img-circle">
+        <button class="delete">&times;</button>
+      </div>
+
       
-      <input type="text" value="{{image}}" name="image">
-      <input type="text" value="{{volume}}" name="volume">
-      <input type="text" name="type" value="{{type}}" />
-      <input type="text" value="{{served}}" name="served"  />
-      <input type="text" value="{{description}}" name="description"  />
-      
-      <label >finished</label>
-      <input type="checkbox" {{isfinished}} class="toggle-finished" />
-      <label >sellable</label>
-      <input type="checkbox" {{issellable}} class="toggle-sellable" />
-       <img src="/images/{{image}}"  style="width:90px;height:90px;">
-    </li>
+
+    </div>
+    </form> 
  </template>
 
 
 <template name="manageProducts">
-<div class="container">
-    <header>
-      <h1>Prod List</h1>
-      <form class="new-prod">
-        <input type="text" name="name"  placeholder="name" />
-        <input type="text" name="price" placeholder="price 4.5" />
-        <input type="text" name="image" placeholder="image" />
-        <input type="text" name="volume" placeholder="volume 0.2" />
-        <input type="text" name="type" placeholder="type" />
-        <input type="text" name="served" placeholder="served" />
-        <input type="text" name="description" placeholder="description" />
+<div class="container-fluid">
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <form class="new-prod form-inline" role="form">
+        <input type="text" class="form-control" name="name"  placeholder="name" />
+        <input type="text" class="form-control" name="price" placeholder="price 4.5" />
+        <input type="text" class="form-control" name="image" placeholder="image" />
+        <input type="text" class="form-control" name="volume" placeholder="volume 0.2" />
+        <input type="text" class="form-control" name="type" placeholder="type" />
+        <input type="text" class="form-control" name="served" placeholder="served" />
+        <input type="text" class="form-control" name="menu_name" placeholder="menu_name" />
+        <input type="text" class="form-control" name="description" placeholder="description" />
         <label >sellable</label>
         <input type="checkbox" name="sellable" />
         <input type="submit" value="Submit">
       </form>
-    </header>
- 
-    <ul>
-      {{#each products}}
-        {{> product}}
+      </tr>
+    </thead>
+    <tbody>
+    {{#each products}}
+        <tr>{{> product}}</tr>
       {{/each}}
-    </ul>
+      
+    </tbody>
+  </table>
   </div>
 </template>
 
-<template name="home"><p>Welcome to the Todos application.</p></template>
+<template name="home">
+   <p>Welcome to the Todos application.</p>
+</template>
 
 <template name="main">
-    <h1>ProdList</h1>
+    
     {{> navigation}}
     
-    {{> yield}}
-    <hr />
-    <p>Copyright &copy; Products, 2014-2015.</p>
+    {{> yield}}  
 </template>       
 
 <template name="navigation">
-    <ul>
+    <ul class="list-inline">
         <li><a href="{{pathFor route='home'}}">Home</a></li>
         <li><a href="{{pathFor route='manageProducts'}}">manage_products</a></li>
         <li><a href="{{pathFor route='orders'}}">orders</a></li>
@@ -71,68 +118,157 @@
 </template> 
 
 <template name="addOrder">
-    <form>Create a order:
-        <input type="text" placeholder="guest name here..." name="guestName">
-        <input type="text" placeholder="table num here..." name="tableNum">
-        <input type="submit" value="Submit">
+  <div class="row">
+    <div class="col-sm-4">
+    </div>
+    <div class="col-sm-4 well">
+      <form>Create a order:
+        <input type="text" class="form-control" placeholder="guest name " name="guestName">
+        <input type="text" class="form-control" placeholder="table num " name="tableNum">
+        <button type="submit" class="btn btn-default">
+        <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add
+        </button>
     </form>
-
+    </div>
+    <div class="col-sm-4"></div>
+  </div>
 </template>  
 
 <template name="orders">
     <h2>Orders</h2>
     {{> addOrder}}
     <br>
-    <ul>
-        {{#each orders}}
-            <a class = "selectOrder" href="/order/{{_id}}">
-              <li>
-
-                <h2>{{guestName}} Tav:{{tableNum}} Conto:{{bill}}</h2>
-              </li>
-            </a>
-        {{/each}}
-    </ul>
+    <div class="row">
+        
+    </div>
+    {{#each grouped_orders}}
+      {{> orderRow }}
+    {{/each}}
     
-
-
-
-
 </template>   
+
+<template name='orderRow'>
+  <div class='row span12' style="display:flex;">
+    {{#each row }}
+      {{> orderItem}}
+    {{/each}}
+  </div>
+</template>
+
+<template name="orderItem">
+  <div class="col-md-3 panel panel-default" style="padding-left: 0px; padding-right: 0px">
+    <div class="panel-heading">
+      <h3 class="panel-title">
+        <span class="label label-default">
+          <span class="glyphicon glyphicon-user" aria-hidden="true"></span>
+          {{guestName}}    Tav:{{tableNum}}
+        </span>
+
+        <span class="label label-default pull-right">{{bill}}€</span>
+      </h3>
+    </div>
+    <a class = "selectOrder" href="/order/{{_id}}">
+    <div class="panel-body">
+      
+        <ul>
+          {{#each items}}
+            <li>
+              {{quantity}} {{name}} {{sub_total}}€
+            </li>
+          {{/each}} 
+         </ul>                              
+      
+    </div>
+    </a>
+    <div class="panel-footer">
+      <button class="delete">&times;</button> 
+    <button type="button" class="btn btn-default btn-xs pay pull-right">
+        <span class="glyphicon glyphicon-euro" aria-hidden="true"></span> Puosésò
+      </button>
+    </div>
+
+  </div>
+</template>
 
 
 
 <template name="menu">
-   
-   <ul>
-      {{#each menu_products}}
-          <li class="menu_item " id="{{_id}}" >
-            
-            <img src="/images/{{image}}"  style="width:90px;height:90px;">
-            <input type="text" value="{{name}}" name="name">
-            <input type="text" value="{{volume}}" name="volume">
-            <input type="text" value="{{price}}" name="price">
-            <button class = "add"> add</button> 
-          </li>
-      
+    {{#each menu_products}}
+    <div class="well well-sm">
+      {{name}}
+
+      <ul class="list-inline" >
+      {{#each products}}
+         <li class="menu_item" id="{{_id}}">
+          <div class="row">
+            <div class="col-sm-12">
+            {{menu_name}}
+            <a href="#" class = "add">
+              <img  src="/images/{{image}}" alt="{{name}}" class="img-responsive img-circle" style="width: 60px; height: 60px;">
+            </a>     
+          </div>     
+        </div>
+      </li>
       {{/each}}
-    </ul>
+      </ul>
+
+    </div>
+ 
+    {{/each}}
 </template>
 
 <template name="listOrder">
-  <h2>Order: {{guestName}} Table: {{tableNum}}  Bill: {{bill}}</h2>
-  
-  <ul>
-    {{#each items}}
+  <div class="row con">
+    <div class="col-xs-5 col-sm-5 col-md-5 col-lg-5 fixed">
+      <h4>Order: {{guestName}} Table: {{tableNum}}  Bill: {{bill}}</h4>
 
-    <li>
-       <button class="delete">&times;</button> 
-       {{quantity}}  :  {{name}}  :   {{price}}€
-     </li>
-    {{/each}}
-      
-  </ul>
-    
-  <h2>Menu</h2>
-    {{> menu}}
+      {{#each items}}
+        <div class="row ">
+
+          <div class="col-xs-1">
+          <button class="delete">&times;</button>
+          </div>
+          
+          <div class="col-xs-6">
+            {{quantity}} {{name}} ({{menu_name}})
+           
+          </div>
+          
+            
+          <div class="col-xs-1">
+            <div class="btn-group">
+            <button type="button" class="btn btn-xs btn-default lowerPrice" aria-label="Right Align"><span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span></button>
+            </div>
+            
+          </div>
+          <div class="col-xs-1">
+            {{sub_total}}€
+          </div>
+
+          <div class="col-xs-1">
+            <div class="btn-group">
+              <button type="button" class="btn btn-xs btn-default raisePrice" aria-label="Right Align"><span class="glyphicon glyphicon-chevron-up" aria-hidden="true"></span></button>
+            </div>  
+          </div>  
+             
+          <div class="col-xs-2">
+            <button type="button" class="btn btn-default btn-xs payItem"><span class="glyphicon glyphicon-euro" aria-hidden="true"></span> Pav</button>
+          </div>
+
+        </div>
+              
+      {{/each}}
+          
+      <button type="button" class="btn btn-default btn-xs pay">
+        <span class="glyphicon glyphicon-euro" aria-hidden="true"></span> Puosésò
+      </button>
+
+    </div>
+    <div class="col-xs-7 col-sm-7 col-md-7 col-lg-7 scrollit">
+      <h2>Menu</h2>
+        {{> menu}}
+    </div>
+  </div>
 </template>
+
+

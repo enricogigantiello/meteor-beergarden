@@ -1,14 +1,27 @@
 GUI per gestione delle categorie per l'admin
+
 Utenti con admin, cliente, cameriere
 Login/Registrazione
 Login con Facebook
-Recupera Immagini prodotti in vendita
+
 Aggiornare Prodotti in vendita
 Aggiungere prodotti non in vendita
+Blacklist invece di paga
+
 Tasto ingredienti
-Somma Ordini uguali
+
+pagamento di piu item cn sommatore
+
+bootstrap
+
 
 
 
 fatto
 eliminazione di un ordine
+Somma Ordini uguali
+
+
+redirect dopo chiusura tavolo
+Recupera Immagini prodotti in vendita
+dividere menu in liste per tipo

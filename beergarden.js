@@ -21,6 +21,7 @@ Router.route('/', {
 });
 
 
+
 if (Meteor.isClient) {
   // This code only runs on the client
   Template.manageProducts.helpers({
@@ -39,10 +40,11 @@ if (Meteor.isClient) {
       var name = event.target.name.value;
       var price = parseFloat(event.target.price.value);
       var image = event.target.image.value;
-      var volume = parseFloat(event.target.volume.tvalue);
+      var volume = parseFloat(event.target.volume.value);
       var type = event.target.type.value;
       var description = event.target.description.value;
       var served = event.target.served.value;
+      var menu_name = event.target.menu_name.value;
       var sellable = event.target.sellable.checked;
     
       // Insert a task into the collection
@@ -53,6 +55,7 @@ if (Meteor.isClient) {
         volume: volume,
         type: type,
         served: served,
+        menu_name: menu_name,
         description: description,
         finished: false,
         sellable: sellable
@@ -69,6 +72,7 @@ if (Meteor.isClient) {
       event.target.type.value= "";
       event.target.description.value= "";
       event.target.served.value= "";
+      event.target.menu_name.value= "";
       event.target.sellable.checked= false;
     }
   });
@@ -92,6 +96,15 @@ if (Meteor.isClient) {
     }
   });
 
+function keyUpHandler (e){
+    var documentId = this._id;
+    var name = $(event.target).attr('name');
+    var prod_elem = $(event.target).val();
+    var element={};
+    element[name]=prod_elem;
+    Products.update({ _id: documentId }, {$set: element});
+  };
+
   Template.product.events({
     "click .toggle-finished": function () {
       // Set the checked property to the opposite of its current value
@@ -110,49 +123,9 @@ if (Meteor.isClient) {
       if(confirm){
       Products.remove(this._id);
       }
-    },
-    'keyup [name=name]': function(event){
-    var documentId = this._id;
-    var prod_elem = $(event.target).val();
-    Products.update({ _id: documentId }, {$set: { name: prod_elem }});
-    //console.log("Task changed to: " + todoItem);
-    },
-    'keyup [name=price]': function(event){
-    var documentId = this._id;
-    var prod_elem = $(event.target).val();
-    Products.update({ _id: documentId }, {$set: { price: prod_elem }});
-    //console.log("Task changed to: " + todoItem);
-    },
-    'keyup [name=volume]': function(event){
-    var documentId = this._id;
-    var prod_elem = $(event.target).val();
-    Products.update({ _id: documentId }, {$set: { volume: prod_elem }});
-    //console.log("Task changed to: " + todoItem);
-    },
-    'keyup [name=image]': function(event){
-    var documentId = this._id;
-    var prod_elem = $(event.target).val();
-    Products.update({ _id: documentId }, {$set: { image: prod_elem }});
-    //console.log("Task changed to: " + todoItem);
-    },
-    'keyup [name=type]': function(event){
-    var documentId = this._id;
-    var prod_elem = $(event.target).val();
-    Products.update({ _id: documentId }, {$set: { type: prod_elem }});
-    //console.log("Task changed to: " + todoItem);
-    },
-    'keyup [name=description]': function(event){
-    var documentId = this._id;
-    var prod_elem = $(event.target).val();
-    Products.update({ _id: documentId }, {$set: { description: prod_elem }});
-    //console.log("Task changed to: " + todoItem);
-    },
-    'keyup [name=served]': function(event){
-    var documentId = this._id;
-    var prod_elem = $(event.target).val();
-    Products.update({ _id: documentId }, {$set: { served: prod_elem }});
-    //console.log("Task changed to: " + todoItem);
-    }
+    },    
+    'keyup .form-control': keyUpHandler,
+    
   });
 
 /**
@@ -171,7 +144,8 @@ if (Meteor.isClient) {
             createdAt: new Date(),
             bill: 0.0,
             payed: false,
-            items: [] 
+            items: [],
+            payedItems: [] 
         });
         $('[name=guestName]').val('');
         $('[name=tableNum]').val('');
@@ -180,16 +154,52 @@ if (Meteor.isClient) {
 
   Template.orders.helpers({
       'orders': function(){
-          return Orders.find({}, {sort: {guestName: 1}});
+        return Orders.find({payed : false}, {sort: {guestName: 1}});
+      },
+      'mod4': function (ind) {
+      return ind % 4 === 0
+      },
+      'grouped_orders': function () {
+        all = Orders.find({payed : false}, {sort: {bill: 1}}).fetch();
+        chunks = [];
+        size = 4;
+        while (all.length > size) {
+            chunks.push({ row: all.slice(0, size)});
+            all = all.slice(size);
+        }
+        chunks.push({row: all});
+        console.log(JSON.stringify(chunks));
+        return chunks;
       }
 
   });
 
   Template.orders.events({
     "click .selectOrder": function () {
+      Session.set('selectedOrder', this._id);      
+    },
+    "click .pay": function (){
+      var selectedOrder = this._id;
+      alert(selectedOrder);
 
-      Session.set('selectedOrder', this._id);
+      var order = Orders.findOne(selectedOrder);
+      //var order = Orders.find({_id:"TGmazfgvzHwvBtvBW"}).fetch()
+      //alert(order.bill);
+      var confirm = window.confirm("Sono "+order.bill+" euri, bello");
       
+      if(confirm){
+        Meteor.call('payBill',selectedOrder); 
+        Router.go('orders');       
+      }
+    },
+     "click .delete": function (){
+      var confirm = window.confirm("Delete the order: "+this.guestName +" Tab: "+this.tableNum+" ?");
+      if(confirm){
+        var selectedOrder = this._id;
+        console.log( selectedOrder);
+          
+        Meteor.call('remOrder',selectedOrder);
+      }
     }
 
   });
@@ -197,7 +207,36 @@ if (Meteor.isClient) {
   Template.menu.helpers({
      
       'menu_products': function(){
-          return Products.find({ finished: false, sellable: true}, {sort: {type: 1}});
+       // var list = Products.find({},{ type: 1, _id: 0 });
+        var distinctEntries = _.uniq(Products.find(
+                                      {}, 
+                                      {sort: {type: 1}, fields: {type: true}}
+                                      )
+                                  .fetch()
+                                  .map(function(x) 
+                                    { return x.type;}), true);
+        console.log(distinctEntries);
+
+        var result = [];
+        for (var i = 0; i < distinctEntries.length; i++) {
+          res={};
+          res.name = distinctEntries[i];
+          res.products = Products.find({ type: distinctEntries[i], finished: false, sellable: true}, {sort: {type: 1, served: 1, name: 1}});
+          
+          result[i] = res;
+          //result[distinctEntries[i]].name=distinctEntries[i];
+          //result[distinctEntries[i]].products = Products.find({ type: distinctEntries[i], finished: false, sellable: true}, {sort: {type: 1, served: 1, name: 1}});
+        }
+  
+
+        console.log(result);
+
+        return result;
+        
+      },
+      'type_list' : function(){
+        return Products.find({ finished: false, sellable: true}, {sort: {type: 1, served: 1, name: 1}});
+
       }
 
   });
@@ -205,24 +244,16 @@ if (Meteor.isClient) {
   Template.menu.events({
     "click .add": function () {
       var selectedOrder = Session.get('selectedOrder');
-      
-      
-      
-      
+      var product_id = this._id;
+
       if(selectedOrder != null){
-        //looks for orders with selectedOrder = id that has product_id in the items array
         cursor = Orders.find({  $and : [  {items: {$elemMatch: {product_id: this._id}}},  {_id: selectedOrder }  ]});
+        //looks for orders with selectedOrder = id that has product_id in the items array
+        //in other words if the order has already that product
+        
         if(cursor.count()>0){
-          Orders.update(selectedOrder, {
-            //modify quantity
-            //{user_id : 123456 , "items.item_name" : "my_item_two" } , {$inc : {"items.$.price" : 1} }  
-
-            $inc: { bill: parseFloat(this.price) }
-          
-          });
-
-        }
-        else{
+          Meteor.call('addQuantity',selectedOrder, product_id, this.price);
+       }else{
 
           var item = {
           product_id:  this._id,
@@ -230,10 +261,12 @@ if (Meteor.isClient) {
           volume: this.volume,
           price:  this.price,
           image:  this.image, 
-          quantity: 1
+          quantity: 1,
+          menu_name: this.menu_name,
+          sub_total: this.price
           };
         
-          console.log(item);
+          
           Orders.update(selectedOrder, {
             $push: { items: item },
             $inc: { bill: parseFloat(item.price) }
@@ -247,7 +280,18 @@ if (Meteor.isClient) {
         
 
       }
-      else alert("didn't choose an order");
+      else {
+        var confirm = window.confirm("didn't choose an order");
+      
+      if(confirm){
+        //Meteor.call('payBill',selectedOrder);
+        Router.go('orders');
+        
+      }
+        //alert("didn't choose an order");
+        
+
+      }
       
     }
 
@@ -256,34 +300,175 @@ if (Meteor.isClient) {
   Template.listOrder.events({
     "click .delete": function (){
       var prod_id= this.product_id;
-      var price = parseFloat(this.price);
+      
+
       var quantity = parseInt(this.quantity);
       
-      var confirm = window.confirm("Delete this order ?");
+      var confirm = window.confirm("Delete one "+this.name+" from this order ?");
       if(confirm){
         var selectedOrder = Session.get('selectedOrder');
         //alert( Session.get('selectedOrder'));
         if (quantity > 1){
-
-          Orders.update(selectedOrder,{$inc: { quantity: -1 }},{ multi: false });
-          Orders.update(selectedOrder,{$inc: { bill: -(price) }},{ multi: false });
+          Meteor.call('remQuantity',selectedOrder, prod_id, this.price);
 
         }else{
 
-          Orders.update(selectedOrder,{ $pull: { items: { product_id: prod_id } } },{ multi: false });
-          Orders.update(selectedOrder,{$inc: { bill: -(price) }},{ multi: false });
-
+          Meteor.call('remItem',selectedOrder, prod_id, this.price);
         }
-
-      
       }
-    }
+    },
+    "click .pay": function (){
+      var selectedOrder = Session.get('selectedOrder');
+
+      var order = Orders.findOne(selectedOrder);
+      //var order = Orders.find({_id:"TGmazfgvzHwvBtvBW"}).fetch()
+      //alert(order.bill);
+      var confirm = window.confirm("Sono "+order.bill+" euri, bello");
+      
+      if(confirm){
+        Meteor.call('payBill',selectedOrder);
+        Router.go('orders');
+        
+      }
+    },
+    "click .payItem": function (){
+      var item = {
+          product_id:  this.product_id,
+          name: this.name,
+          volume: this.volume,
+          price:  this.price,
+          image:  this.image, 
+          quantity: 1
+          };
+      //var quantity = parseInt(this.quantity);
+      
+      var confirm = window.confirm("Sono "+parseFloat(this.price)+" euri, bello");
+      if(confirm){
+        var selectedOrder = Session.get('selectedOrder');
+        Meteor.call('payItem',selectedOrder, item);
+        if (this.quantity > 1){
+          Meteor.call('remQuantity',selectedOrder, this.product_id, this.price);
+
+        }else{
+          Meteor.call('remItem',selectedOrder, this.product_id, this.price);
+        }
+      }
+    },
+    "click .lowerPrice": function (){
+      Meteor.call('modifyPrice',
+                  Session.get('selectedOrder'),
+                  this.product_id,
+                  -1);
+      
+    },
+    "click .raisePrice": function (){
+      Meteor.call('modifyPrice',
+                  Session.get('selectedOrder'),
+                  this.product_id,
+                  1);
+
+    },
 
   });
 
 }
 
 if(Meteor.isServer){
+    Meteor.methods({
+
+    'addQuantity': function(selectedOrder, product_id,price){
+      console.log(selectedOrder+" "+product_id);
+
+      Orders.update(selectedOrder, {
+            $inc: { bill: parseFloat( price) }
+          
+          });
+
+     
+      Orders.update(
+        { _id: selectedOrder , "items.product_id": product_id },
+        { 
+          $inc: { "items.$.quantity" : 1 }
+        }
+      )
+
+      Orders.update(
+        { _id: selectedOrder , "items.product_id": product_id },
+        { 
+          $inc: { "items.$.sub_total" : parseFloat(price) }
+        }
+      )        
+    },
+
+    'remQuantity': function(selectedOrder, product_id,price){
+      console.log(selectedOrder+" "+product_id);
+
+      Orders.update(selectedOrder, {
+            $inc: { bill: -parseFloat( price) }
+          
+          });
+
+     
+      Orders.update(
+        { _id: selectedOrder , "items.product_id": product_id },
+        { $inc: { "items.$.quantity" : -1 } }
+      )  
+      
+      Orders.update(
+        { _id: selectedOrder , "items.product_id": product_id },
+        { $inc: { "items.$.sub_total" : -parseFloat(price) }
+         }
+      )
+    },
+
+    'remItem': function(selectedOrder, product_id,price){
+
+      Orders.update(selectedOrder,{ $pull: { items: { product_id: product_id } } },{ multi: false });
+      Orders.update(selectedOrder,{$inc: { bill: -(price) }},{ multi: false });    
+    },
+
+    'payBill': function(selectedOrder){
+
+      Orders.update(selectedOrder,{ $set: {payed:true}});        
+    },
+
+    'payItem': function(selectedOrder, item){
+      //console.log(selectedOrder+" "+product_id);
+      Orders.update(selectedOrder, {
+            $push: { payedItems: item },
+            //$inc: { bill: parseFloat(item.price) }
+          });        
+    },
+
+    'modifyPrice': function(selectedOrder, product_id, mod){
+       Orders.update(
+        { _id: selectedOrder , "items.product_id": product_id },
+        { $inc: { "items.$.sub_total" : mod }
+         }
+      );
+
+       Orders.update(selectedOrder,{$inc: { bill: mod }},{ multi: false });
+                 
+    },
+
+    'remOrder': function(selectedOrder){
+      /*
+       Orders.remove(
+        { _id: selectedOrder },
+        { }
+  
+      );*/
+                 
+    }
+
+});
+
+
+
+  /* uncomment to have rest services
+
+
+
     // server code goes here
     // Global API configuration
   var Api = new Restivus({
@@ -295,6 +480,9 @@ if(Meteor.isServer){
   // /api/coll/:id for Items collection
   Api.addCollection(Products);
   Api.addCollection(Orders);
+*/
+
+
 }
 
 
