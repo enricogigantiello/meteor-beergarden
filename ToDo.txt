@@ -3,7 +3,7 @@ GUI per gestione delle categorie per l'admin
 Utenti con admin, cliente, cameriere
 Login/Registrazione
 Login con Facebook
-Recupera Immagini prodotti in vendita
+
 Aggiornare Prodotti in vendita
 Aggiungere prodotti non in vendita
 Blacklist invece di paga
@@ -14,13 +14,27 @@ pagamento di piu item cn sommatore
 
 bootstrap
 
+update
 
 
-redirect dopo chiusura tavolo
-
-dividere menu in liste per tipo
 
 
 fatto
 eliminazione di un ordine
 Somma Ordini uguali
+
+
+redirect dopo chiusura tavolo
+Recupera Immagini prodotti in vendita
+dividere menu in liste per tipo
+
+
+
+
+update
+passato tutti i prodotti in payed items al pagamento del conto
+cambiato l'item anche in payitem
+fatto apparire lista elementi pagati
+fai sparire ordine se pagato ultimo elem singolo
+mostra elem pagati nell elenco ordini
+aggiunto route per schedules
