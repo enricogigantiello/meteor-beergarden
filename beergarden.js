@@ -13,7 +13,7 @@ Router.route('/order/:_id', {
 });
 Router.route('/manageProducts');
 Router.route('/orders');
-
+Router.route('/schedules');
 
 Router.route('/', {
     name: 'home',
@@ -96,14 +96,7 @@ if (Meteor.isClient) {
     }
   });
 
-function keyUpHandler (e){
-    var documentId = this._id;
-    var name = $(event.target).attr('name');
-    var prod_elem = $(event.target).val();
-    var element={};
-    element[name]=prod_elem;
-    Products.update({ _id: documentId }, {$set: element});
-  };
+
 
   Template.product.events({
     "click .toggle-finished": function () {
@@ -124,7 +117,14 @@ function keyUpHandler (e){
       Products.remove(this._id);
       }
     },    
-    'keyup .form-control': keyUpHandler,
+    'keyup .form-control': function(){
+    var documentId = this._id;
+    var name = $(event.target).attr('name');
+    var prod_elem = $(event.target).val();
+    var element={};
+    element[name]=prod_elem;
+    Products.update({ _id: documentId }, {$set: element});
+    }
     
   });
 
@@ -317,7 +317,7 @@ function keyUpHandler (e){
         }
       }
     },
-    "click .pay": function (){
+    "click .pay": function payBill(){
       var selectedOrder = Session.get('selectedOrder');
 
       var order = Orders.findOne(selectedOrder);
@@ -332,10 +332,18 @@ function keyUpHandler (e){
       }
     },
     "click .payItem": function (){
+
+      var selectedOrder = Session.get('selectedOrder');
+     
+      var num = Orders.findOne( selectedOrder).items.length;
+
+      
+      
+
       var item = {
           product_id:  this.product_id,
           name: this.name,
-          volume: this.volume,
+          menu_name: this.menu_name,
           price:  this.price,
           image:  this.image, 
           quantity: 1
@@ -344,14 +352,25 @@ function keyUpHandler (e){
       
       var confirm = window.confirm("Sono "+parseFloat(this.price)+" euri, bello");
       if(confirm){
-        var selectedOrder = Session.get('selectedOrder');
+        
+
         Meteor.call('payItem',selectedOrder, item);
         if (this.quantity > 1){
           Meteor.call('remQuantity',selectedOrder, this.product_id, this.price);
 
         }else{
           Meteor.call('remItem',selectedOrder, this.product_id, this.price);
+          
         }
+
+         
+      if (num == 1){
+            
+            Orders.update(selectedOrder,{ $set: {payed:true}});
+            Router.go('orders');
+          }
+
+
       }
     },
     "click .lowerPrice": function (){
@@ -370,6 +389,19 @@ function keyUpHandler (e){
     },
 
   });
+
+  Template.schedules.helpers({
+    'dates' : function(){
+      console.log(getMonday(new Date()));
+      var dates=[];
+      return dates;
+
+    },
+
+
+  });
+
+  
 
 }
 
@@ -428,8 +460,29 @@ if(Meteor.isServer){
     },
 
     'payBill': function(selectedOrder){
+      Orders.update(selectedOrder,{ $set: {payed:true}});
 
-      Orders.update(selectedOrder,{ $set: {payed:true}});        
+      var items = Orders.findOne( selectedOrder).items;
+
+      for (var i = items.length - 1; i >= 0; i--) {
+        var item = {
+          product_id:  items[i].product_id,
+          name: items[i].name,
+          menu_name: items[i].menu_name,
+          price:  items[i].sub_total, 
+          quantity: items[i].quantity
+          };
+
+        Orders.update(selectedOrder,{ 
+          $pull: { items: { product_id: items[i].product_id } } 
+            },{ multi: false });
+
+        Orders.update(selectedOrder, {
+            $push: { payedItems: item },
+          }); 
+      };
+
+            
     },
 
     'payItem': function(selectedOrder, item){
@@ -441,13 +494,13 @@ if(Meteor.isServer){
     },
 
     'modifyPrice': function(selectedOrder, product_id, mod){
-       Orders.update(
-        { _id: selectedOrder , "items.product_id": product_id },
-        { $inc: { "items.$.sub_total" : mod }
-         }
-      );
+      Orders.update(
+       { _id: selectedOrder , "items.product_id": product_id },
+       { $inc: { "items.$.sub_total" : mod }
+        }
+       );
 
-       Orders.update(selectedOrder,{$inc: { bill: mod }},{ multi: false });
+      Orders.update(selectedOrder,{$inc: { bill: mod }},{ multi: false });
                  
     },
 
@@ -486,4 +539,34 @@ if(Meteor.isServer){
 }
 
 
+Date.prototype.addDays = function(days) {
+    var dat = new Date(this.valueOf())
+    dat.setDate(dat.getDate() + days);
+    return dat;
+}
 
+function getDates(startDate, stopDate) {
+    var dateArray = new Array();
+    var currentDate = startDate;
+    while (currentDate <= stopDate) {
+        dateArray.push( new Date (currentDate) )
+        currentDate = currentDate.addDays(1);
+    }
+    return dateArray;
+}
+
+function getMonday(d) {
+  d = new Date(d);
+  var day = d.getDay(),
+      diff = d.getDate() - day + (day == 0 ? -6:1); // adjust when day is sunday
+      var monday = new Date(d.setDate(diff));
+      var dateArray = new Array();
+      for (var i = 0; i <7 ; i++) {
+        dateArray.push( new Date (monday.addDays(i)) );
+
+        
+      };
+  return dateArray;
+}
+
+ // Mon Nov 08 2010

@@ -2,7 +2,7 @@
  
 <template name="product">
 
-	 
+   
    <form class="form-inline" role="form">
     <div class="form-group">
       <div class="col-xs-1">        
@@ -112,10 +112,19 @@
         <li><a href="{{pathFor route='home'}}">Home</a></li>
         <li><a href="{{pathFor route='manageProducts'}}">manage_products</a></li>
         <li><a href="{{pathFor route='orders'}}">orders</a></li>
+        <li><a href="{{pathFor route='schedules'}}">schedules</a></li>
        
         
     </ul>
 </template> 
+
+<template name="schedules">
+    
+    <h1>AA</h1>
+    {{#each dates}}
+    <h1> date </h1>
+    {{/each}}  
+</template>   
 
 <template name="addOrder">
   <div class="row">
@@ -176,7 +185,18 @@
               {{quantity}} {{name}} {{sub_total}}€
             </li>
           {{/each}} 
-         </ul>                              
+         </ul>  
+
+         <br>
+         <h5> Payed </h5>    
+
+         <ul>
+          {{#each payedItems}}
+            <li><strike>
+              {{quantity}} {{name}} {{price}}€
+            </strike></li>
+          {{/each}} 
+         </ul>                           
       
     </div>
     </a>
@@ -262,6 +282,25 @@
       <button type="button" class="btn btn-default btn-xs pay">
         <span class="glyphicon glyphicon-euro" aria-hidden="true"></span> Puosésò
       </button>
+
+      <br>
+      <br>
+      {{#each payedItems}}
+        <div class="row ">
+          
+          <div class="col-xs-6">
+            <strike>{{quantity}} {{name}} ({{menu_name}})</strike>
+          </div>
+          
+          <div class="col-xs-6">
+            {{price}}€
+          </div>
+
+        
+
+        </div>
+              
+      {{/each}}
 
     </div>
     <div class="col-xs-7 col-sm-7 col-md-7 col-lg-7 scrollit">
