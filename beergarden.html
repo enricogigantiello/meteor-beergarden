@@ -2,7 +2,7 @@
  
 <template name="product">
 
-   
+	 
    <form class="form-inline" role="form">
     <div class="form-group">
       <div class="col-xs-1">        
@@ -66,38 +66,45 @@
  </template>
 
 
-<template name="manageProducts">
-<div class="container-fluid">
-  <table class="table table-striped">
-    <thead>
-      <tr>
-        <form class="new-prod form-inline" role="form">
-        <input type="text" class="form-control" name="name"  placeholder="name" />
-        <input type="text" class="form-control" name="price" placeholder="price 4.5" />
-        <input type="text" class="form-control" name="image" placeholder="image" />
-        <input type="text" class="form-control" name="volume" placeholder="volume 0.2" />
-        <input type="text" class="form-control" name="type" placeholder="type" />
-        <input type="text" class="form-control" name="served" placeholder="served" />
-        <input type="text" class="form-control" name="menu_name" placeholder="menu_name" />
-        <input type="text" class="form-control" name="description" placeholder="description" />
-        <label >sellable</label>
-        <input type="checkbox" name="sellable" />
-        <input type="submit" value="Submit">
-      </form>
-      </tr>
-    </thead>
-    <tbody>
-    {{#each products}}
-        <tr>{{> product}}</tr>
-      {{/each}}
-      
-    </tbody>
-  </table>
-  </div>
-</template>
+ <template name="manageProducts">
+  <div class="container-fluid">
+   <table class="table table-striped">
+     <thead>
+       <tr>
+         <form class="new-prod form-inline" role="form">
+         <input type="text" class="form-control" name="name"  placeholder="name" />
+         <input type="text" class="form-control" name="price" placeholder="price 4.5" />
+         <input type="text" class="form-control" name="image" placeholder="image" />
+         <input type="text" class="form-control" name="volume" placeholder="volume 0.2" />
+         <input type="text" class="form-control" name="type" placeholder="type" />
+         <input type="text" class="form-control" name="served" placeholder="served" />
+         <input type="text" class="form-control" name="menu_name" placeholder="menu_name" />
+         <input type="text" class="form-control" name="description" placeholder="description" />
+         <label >sellable</label>
+         <input type="checkbox" name="sellable" />
+         <input type="submit" value="Submit">
+       </form>
+       </tr>
+     </thead>
+     <tbody>
+     {{#each products}}
+         <tr>{{> product}}</tr>
+       {{/each}}
+       
+     </tbody>
+   </table>
+   </div>
+ </template>
 
 <template name="home">
-   <p>Welcome to the Todos application.</p>
+   {{> loginButtons}}
+
+ {{#if currentUser}}
+  
+   <img src="{{imageUrl}}"  class="img-responsive img-circle">
+   {{/if}}
+
+
 </template>
 
 <template name="main">
@@ -108,23 +115,60 @@
 </template>       
 
 <template name="navigation">
-    <ul class="list-inline">
+  {{#if currentUser}}
+  <div class="row">
+    <div class="col-xs-6">
+      <ul class="list-inline">
         <li><a href="{{pathFor route='home'}}">Home</a></li>
         <li><a href="{{pathFor route='manageProducts'}}">manage_products</a></li>
         <li><a href="{{pathFor route='orders'}}">orders</a></li>
         <li><a href="{{pathFor route='schedules'}}">schedules</a></li>
        
         
-    </ul>
+      </ul>
+    </div>
+    <div class="col-xs-6">
+     
+      
+      
+      
+    </div>
+  </div>
+  {{/if}}
+    
+
+    
 </template> 
 
 <template name="schedules">
     
-    <h1>AA</h1>
+
+    <div class="row">
+    <div class="col-xs-3 well" ></div>
+    
     {{#each dates}}
-    <h1> date </h1>
-    {{/each}}  
-</template>   
+    <div class="col-xs-1">
+      {{date.getWeekDay}}, {{date.getDate}} {{date.getMonthName}}
+      {{>displayDate}}
+    </div>
+    
+    {{/each }}
+    <div class="col-xs-2 well" ></div>
+
+    </div>
+     
+</template>  
+
+<template name="displayDate">
+
+   <button type="button" class="btn btn-default add">
+    <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add
+   </button> 
+    {{#each cash}}
+    <input type="text" class="form-control modify" name="cash" value="{{this}}" id="{{_id}}" placeholder="name">
+    {{/each}}
+  
+</template> 
 
 <template name="addOrder">
   <div class="row">
@@ -289,7 +333,7 @@
         <div class="row ">
           
           <div class="col-xs-6">
-            <strike>{{quantity}} {{name}} ({{menu_name}})</strike>
+            {{quantity}} {{name}} ({{menu_name}})
           </div>
           
           <div class="col-xs-6">

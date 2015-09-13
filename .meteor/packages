@@ -10,3 +10,6 @@ insecure
 iron:router
 nimble:restivus
 twbs:bootstrap
+accounts-ui
+accounts-password
+accounts-facebook

@@ -1,5 +1,6 @@
 Products = new Mongo.Collection("products");
 Orders = new Meteor.Collection('orders');
+Schedules = new Meteor.Collection("schedules");
 
 Router.configure({ layoutTemplate: 'main'});
 
@@ -23,7 +24,32 @@ Router.route('/', {
 
 
 if (Meteor.isClient) {
-  // This code only runs on the client
+
+
+/*
+Functions for login and social login
+*/
+  Accounts.ui.config({
+    passwordSignupFields: "USERNAME_ONLY"
+  });
+
+  Deps.autorun(function(){
+    Meteor.subscribe('userData');
+  });
+
+
+  Template.home.helpers({
+    imageUrl: function() {
+     
+      return Meteor.user().imageUrl;
+    }
+  });
+  
+
+
+
+
+  
   Template.manageProducts.helpers({
     products: function () {
        //return Products.find();
@@ -180,7 +206,7 @@ if (Meteor.isClient) {
     },
     "click .pay": function (){
       var selectedOrder = this._id;
-      alert(selectedOrder);
+      
 
       var order = Orders.findOne(selectedOrder);
       //var order = Orders.find({_id:"TGmazfgvzHwvBtvBW"}).fetch()
@@ -247,7 +273,7 @@ if (Meteor.isClient) {
       var product_id = this._id;
 
       if(selectedOrder != null){
-        cursor = Orders.find({  $and : [  {items: {$elemMatch: {product_id: this._id}}},  {_id: selectedOrder }  ]});
+        var cursor = Orders.find({  $and : [  {items: {$elemMatch: {product_id: this._id}}},  {_id: selectedOrder }  ]});
         //looks for orders with selectedOrder = id that has product_id in the items array
         //in other words if the order has already that product
         
@@ -392,12 +418,53 @@ if (Meteor.isClient) {
 
   Template.schedules.helpers({
     'dates' : function(){
-      console.log(getMonday(new Date()));
-      var dates=[];
-      return dates;
+      var week = getCurrentWeek(new Date());
+      var weekSchedule = [];
+      
+
+      for (var i = 0; i < week.length; i++) {
+        var date = ""+week[i].getWeekDay()+", "+week[i].getDay()+"/"+week[i].getMonth()+"/"+week[i].getFullYear();
+        if(Schedules.find({dateObj : date }).fetch().length == 0){
+          
+          var daySchedule = {
+            dateObj: date,
+            date: week[i],
+            cash: [],
+            bar: [],
+            waiters: [],
+            door: [],
+            kitchen: []
+          }
+          Schedules.insert(daySchedule);
+          weekSchedule.push(daySchedule);
+
+        } else {         
+          weekSchedule.push(Schedules.find({date : week[i] }).fetch()[0]);
+        }
+        
+      }
+      return weekSchedule;
 
     },
 
+
+  });
+
+  Template.displayDate.events({
+    'keyup .modify': function(){
+   console.log(this._id);
+   
+    var id = $(event.target).attr('id');
+    var role = $(event.target).attr('name');
+    var name = $(event.target).val();
+    var element = {};
+    element[role]=name;
+    Schedules.update(id, {$push: element});
+    /*
+    var element={};
+    element[name]=prod_elem;
+    Products.update({ _id: documentId }, {$set: element});*/
+    }
 
   });
 
@@ -406,6 +473,30 @@ if (Meteor.isClient) {
 }
 
 if(Meteor.isServer){
+    Accounts.onCreateUser(function(options, user) {
+   console.log("done");
+    user.role = "standard";
+    console.log(user.services.hasOwnProperty("facebook"));
+    if(user.services.hasOwnProperty("facebook")){
+      user.imageUrl = "http://graph.facebook.com/"+user.services.facebook.id+"/picture/?type=large";
+    } else {
+      user.imageUrl = "/images/default-user.png";
+    }
+    return user;
+  });
+
+
+    Meteor.publish('userData', function() {
+      if(!this.userId) return null;
+      return Meteor.users.find(this.userId, {fields: {
+        role: 1, imageUrl: 1,
+      }});
+    });
+
+ 
+
+    
+
     Meteor.methods({
 
     'addQuantity': function(selectedOrder, product_id,price){
@@ -545,28 +636,52 @@ Date.prototype.addDays = function(days) {
     return dat;
 }
 
-function getDates(startDate, stopDate) {
-    var dateArray = new Array();
-    var currentDate = startDate;
-    while (currentDate <= stopDate) {
-        dateArray.push( new Date (currentDate) )
-        currentDate = currentDate.addDays(1);
-    }
-    return dateArray;
+Date.prototype.getWeekDay = function() {
+  var day ="";
+  if(this.getDay() == 0) {day = "Dom";}
+  else if (this.getDay() == 1) {day = "Lun";}
+  else if (this.getDay() == 2) {day = "Mar";}
+  else if (this.getDay() == 3) {day = "Mer";}
+  else if (this.getDay() == 4) {day = "Gio";}
+  else if (this.getDay() == 5) {day = "Ven";}
+  else if (this.getDay() == 6) {day = "Sab";}
+    return day;
 }
 
-function getMonday(d) {
+Date.prototype.getMonthName = function () {
+  var month = new Array();
+  month[0] = "January";
+  month[1] = "February";
+  month[2] = "March";
+  month[3] = "April";
+  month[4] = "May";
+  month[5] = "June";
+  month[6] = "July";
+  month[7] = "August";
+  month[8] = "September";
+  month[9] = "October";
+  month[10] = "November";
+  month[11] = "December";
+  return month[this.getMonth()];
+
+}
+
+
+
+function getCurrentWeek(d) {
   d = new Date(d);
   var day = d.getDay(),
       diff = d.getDate() - day + (day == 0 ? -6:1); // adjust when day is sunday
       var monday = new Date(d.setDate(diff));
       var dateArray = new Array();
       for (var i = 0; i <7 ; i++) {
-        dateArray.push( new Date (monday.addDays(i)) );
+        dateArray.push( new Date (monday.addDays(i).setHours(0,0,0,0)) );
 
         
       };
   return dateArray;
 }
+
+
 
  // Mon Nov 08 2010

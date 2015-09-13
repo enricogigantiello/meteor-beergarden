@@ -15,7 +15,7 @@ pagamento di piu item cn sommatore
 bootstrap
 
 update
-
+controlla eliminazione ordine
 
 
 
