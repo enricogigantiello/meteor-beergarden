@@ -2,6 +2,7 @@ Products = new Mongo.Collection("products");
 Orders = new Meteor.Collection('orders');
 Schedules = new Meteor.Collection("schedules");
 
+
 Router.configure({ layoutTemplate: 'main'});
 
 Router.route('/order/:_id', {
@@ -35,6 +36,7 @@ Functions for login and social login
 
   Deps.autorun(function(){
     Meteor.subscribe('userData');
+    Meteor.subscribe('workers');
 
   });
 
@@ -448,16 +450,9 @@ Functions for login and social login
 
     },
     'workers' : function(){
-      console.log();
-      var a= ["a","b"];
-      Meteor.call("getWorkers", function(error, result){
-        if(error){
-          console.log(error.reason);
-          return;
-        }
-        return result;
+    
+      return Meteor.users.find();
 
-      });
 
       
       //Meteor.call('getWorkers');
@@ -466,8 +461,49 @@ Functions for login and social login
 
   });
 
+  Template.schedules.events({
+      'click .add' : function(){
+       Session.set('selectedDay', this._id);
+       console.log(this._id);  
+    }
+
+  })
+
+  Template.insertUserModal.helpers({
+    
+    'workers' : function(){
+    
+      return Meteor.users.find();
+    }
+
+
+  });
+
+
+  Template.insertUserModal.events({
+ "submit #addWorker": function (event) {
+     // Prevent default browser form submit
+     event.preventDefault();
+ 
+     // Get value from form element
+     var role = event.target.role.value;
+      var worker = event.target.username.value;
+      console.log(Session.get('selectedDay'));
+      console.log(role);
+      console.log(worker);
+     // Insert a task into the collection
+ 
+     // Clear form
+    // event.target.text.value = "";
+   }
+ });
+
+
+
+  
+
   Template.displayDate.events({
-    'keyup .modify': function(){
+  /*  'keyup .modify': function(){
    console.log(this._id);
    
     var id = $(event.target).attr('id');
@@ -476,14 +512,13 @@ Functions for login and social login
     var element = {};
     element[role]=name;
     Schedules.update(id, {$push: element});
-    /*
-    var element={};
-    element[name]=prod_elem;
-    Products.update({ _id: documentId }, {$set: element});*/
-    },
-    'click .add': function(){
+    
+    //var element={};
+    //element[name]=prod_elem;
+    //Products.update({ _id: documentId }, {$set: element});
+    } */
 
-    }
+  
 
   });
 
@@ -512,6 +547,15 @@ if(Meteor.isServer){
         role: 1, imageUrl: 1,
       }});
     });
+
+
+     Meteor.publish('workers', function() {
+   
+      return Meteor.users.find({role: "worker"});
+    });
+
+
+
 
  
 
@@ -626,11 +670,7 @@ if(Meteor.isServer){
     },
 
 
-    'getWorkers': function(){
-      console.log(Meteor.users.find({role: "worker"},{username:1, imageUrl:1}).fetch());
-      return Meteor.users.find({role: "worker"},{username:1, imageUrl:1}).fetch();
-                 
-    }
+    
 
 });
 
