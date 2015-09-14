@@ -149,11 +149,13 @@
     {{#each dates}}
     <div class="col-xs-1">
       {{date.getWeekDay}}, {{date.getDate}} {{date.getMonthName}}
-      {{>displayDate}}
+      {{>displayDate schedule_id = _id}}
     </div>
     
     {{/each }}
-    <div class="col-xs-2 well" ></div>
+    <div class="col-xs-2 well" >{{#each workers}}
+    {{this}}
+    {{/each}}</div>
 
     </div>
      
@@ -164,7 +166,15 @@
    <button type="button" class="btn btn-default add">
     <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add
    </button> 
+   <h6>{{schedule_id}}</h6>
+   
+
     {{#each cash}}
+
+    <input type="text" class="form-control modify" name="cash" value="{{this}}" id="{{_id}}" placeholder="name">
+    {{/each}}
+    {{#each waiter}}
+    
     <input type="text" class="form-control modify" name="cash" value="{{this}}" id="{{_id}}" placeholder="name">
     {{/each}}
   

@@ -14,6 +14,7 @@ pagamento di piu item cn sommatore
 update
 controlla eliminazione ordine
 schedule salvataggio e aggiunta faccine
+ricorda di cambiare ruolo al login per gli utenti
 
 
 

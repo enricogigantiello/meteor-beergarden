@@ -35,6 +35,7 @@ Functions for login and social login
 
   Deps.autorun(function(){
     Meteor.subscribe('userData');
+
   });
 
 
@@ -446,6 +447,21 @@ Functions for login and social login
       return weekSchedule;
 
     },
+    'workers' : function(){
+      console.log();
+      var a= ["a","b"];
+      Meteor.call("getWorkers", function(error, result){
+        if(error){
+          console.log(error.reason);
+          return;
+        }
+        return result;
+
+      });
+
+      
+      //Meteor.call('getWorkers');
+    }
 
 
   });
@@ -464,6 +480,9 @@ Functions for login and social login
     var element={};
     element[name]=prod_elem;
     Products.update({ _id: documentId }, {$set: element});*/
+    },
+    'click .add': function(){
+
     }
 
   });
@@ -475,10 +494,11 @@ Functions for login and social login
 if(Meteor.isServer){
     Accounts.onCreateUser(function(options, user) {
    console.log("done");
-    user.role = "standard";
+    user.role = "worker";
     console.log(user.services.hasOwnProperty("facebook"));
     if(user.services.hasOwnProperty("facebook")){
       user.imageUrl = "http://graph.facebook.com/"+user.services.facebook.id+"/picture/?type=large";
+      user.username = user.services.facebook.name;
     } else {
       user.imageUrl = "/images/default-user.png";
     }
@@ -603,13 +623,20 @@ if(Meteor.isServer){
   
       );*/
                  
+    },
+
+
+    'getWorkers': function(){
+      console.log(Meteor.users.find({role: "worker"},{username:1, imageUrl:1}).fetch());
+      return Meteor.users.find({role: "worker"},{username:1, imageUrl:1}).fetch();
+                 
     }
 
 });
 
 
 
-  /* uncomment to have rest services
+  // uncomment to have rest services
 
 
 
@@ -624,7 +651,7 @@ if(Meteor.isServer){
   // /api/coll/:id for Items collection
   Api.addCollection(Products);
   Api.addCollection(Orders);
-*/
+
 
 
 }
