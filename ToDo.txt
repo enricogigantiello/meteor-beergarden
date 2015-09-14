@@ -1,29 +1,25 @@
 GUI per gestione delle categorie per l'admin
-
 Utenti con admin, cliente, cameriere
-Login/Registrazione
-Login con Facebook
 
-Aggiornare Prodotti in vendita
 Aggiungere prodotti non in vendita
 Blacklist invece di paga
 
 Tasto ingredienti
+modal per menu
 
 pagamento di piu item cn sommatore
 
-bootstrap
+
 
 update
 controlla eliminazione ordine
+schedule salvataggio e aggiunta faccine
 
 
 
 fatto
 eliminazione di un ordine
 Somma Ordini uguali
-
-
 redirect dopo chiusura tavolo
 Recupera Immagini prodotti in vendita
 dividere menu in liste per tipo
@@ -38,3 +34,5 @@ fatto apparire lista elementi pagati
 fai sparire ordine se pagato ultimo elem singolo
 mostra elem pagati nell elenco ordini
 aggiunto route per schedules
+aggiunto login meteor
+login facebbok
