@@ -68,38 +68,30 @@
 
  <template name="manageProducts">
   <div class="container-fluid">
-   <table class="table table-striped">
-     <thead>
-       <tr>
-         <form class="new-prod form-inline" role="form">
-         <input type="text" class="form-control" name="name"  placeholder="name" />
-         <input type="text" class="form-control" name="price" placeholder="price 4.5" />
-         <input type="text" class="form-control" name="image" placeholder="image" />
-         <input type="text" class="form-control" name="volume" placeholder="volume 0.2" />
-         <input type="text" class="form-control" name="type" placeholder="type" />
-         <input type="text" class="form-control" name="served" placeholder="served" />
-         <input type="text" class="form-control" name="menu_name" placeholder="menu_name" />
-         <input type="text" class="form-control" name="description" placeholder="description" />
-         <label >sellable</label>
-         <input type="checkbox" name="sellable" />
-         <input type="submit" value="Submit">
-       </form>
-       </tr>
-     </thead>
-     <tbody>
-     {{#each products}}
-         <tr>{{> product}}</tr>
-       {{/each}}
-       
-     </tbody>
-   </table>
-   </div>
+    <form class="new-prod form-inline" role="form">
+     <input type="text" class="form-control" name="name"  placeholder="name" />
+     <input type="text" class="form-control" name="price" placeholder="price 4.5" />
+     <input type="text" class="form-control" name="image" placeholder="image" />
+     <input type="text" class="form-control" name="volume" placeholder="volume 0.2" />
+     <input type="text" class="form-control" name="type" placeholder="type" />
+     <input type="text" class="form-control" name="served" placeholder="served" />
+     <input type="text" class="form-control" name="menu_name" placeholder="menu_name" />
+     <input type="text" class="form-control" name="description" placeholder="description" />
+     <label >sellable</label>
+     <input type="checkbox" name="sellable" />
+     <input type="submit" value="Submit">
+    </form>
+    <br><br>
+    {{#each products}}
+       {{> product}}
+     {{/each}}
+  </div>
  </template>
 
 <template name="home">
    {{> loginButtons}}
 
- {{#if currentUser}}
+      {{#if currentUser}}
   
    <img src="{{imageUrl}}"  class="img-responsive img-circle" style="width: 100px; height: 100px;">
    {{/if}}
@@ -147,9 +139,16 @@
     <div class="col-xs-3 well" ></div>
     
     {{#each dates}}
-    <div class="col-xs-1 add">
+    <div class="col-xs-1">
       {{date.getWeekDay}}, {{date.getDate}} {{date.getMonthName}}
-      {{>displayDate schedule_id = _id}}
+      <div class="add">
+         <button type="button" class="btn btn-default" data-toggle="modal" data-target="#insertUser">
+       <span class="glyphicon glyphicon-plus" aria-hidden="true" ></span> Add
+      </button> 
+    </div>
+      
+    {{>insertUserModal workers}}
+    {{>displayDate day_schedule=this day_id=this._id}}
     </div>
     
     {{/each }}
@@ -165,28 +164,44 @@
 
 <template name="displayDate">
 
-   <button type="button" class="btn btn-default" data-toggle="modal" data-target="#insertUser">
-    <span class="glyphicon glyphicon-plus" aria-hidden="true" ></span> Add
-   </button> 
-   {{>insertUserModal workers}}
-   <h6>{{schedule_id}}</h6>
+  <div class="well">
 
-   <h6>cassa</h6>
-    {{#each cash}}
-    <img src="{{imageUrl}}"  class="img-responsive img-circle" style="width: 50px; height: 50px;">{{username}}
-   <!-- <input type="text" class="form-control modify" name="cash" value="{{username}}"  placeholder="name"> -->
-    {{/each}}
-
-  <h6>bar</h6>
-    {{#each bar}}
+   <h4>cassa</h4>
+    {{#each day_schedule.cash}}
+    <img src="{{imageUrl}}"  class="img-responsive img-circle" style="width: 30px; height: 30px;">
+    <h6>{{username}}</h6>
     
-    <img src="{{imageUrl}}"  class="img-responsive img-circle" style="width: 50px; height: 50px;">{{username}}
+    <button class="delete" name="{{day_id}}">&times;</button>
+    {{/each}}
+  </div>
+
+  <h4>bar</h4>
+    {{#each day_schedule.bar}}
+    
+    <img src="{{imageUrl}}"  class="img-responsive img-circle" style="width: 30px; height: 30px;">
+    <h6>{{username}}</h6>
+    <button class="delete" name="{{day_id}}">&times;</button>
     {{/each}}
       
-  <h6>camerieri</h6>
-    {{#each waiters}}
-    
-    <img src="{{imageUrl}}"  class="img-responsive img-circle" style="width: 50px; height: 50px;">{{username}}
+  <h4>camerieri</h4>
+    {{#each day_schedule.waiters}}
+    <img src="{{imageUrl}}"  class="img-responsive img-circle" style="width: 30px; height: 30px;">
+    <h6>{{username}}</h6>
+    <button class="delete" name="{{day_id}}">&times;</button>
+    {{/each}}
+
+  <h4>cucina</h4>
+    {{#each day_schedule.kitchen}}
+    <img src="{{imageUrl}}"  class="img-responsive img-circle" style="width: 30px; height: 30px;">
+    <h6>{{username}}</h6>
+    <button class="delete" name="{{day_id}}">&times;</button>
+    {{/each}}
+
+  <h4>porta</h4>
+    {{#each day_schedule.door}}
+    <img src="{{imageUrl}}"  class="img-responsive img-circle" style="width: 30px; height: 30px;">
+    <h6>{{username}}</h6>
+    <button class="delete" name="{{day_id}}">&times;</button>
     {{/each}}
   
 </template> 
@@ -224,7 +239,7 @@
               
              </select>
            </div>
-           <button type="submit" class="btn btn-default " >Submit</button>
+           <button type="submit" class="btn btn-default " >Incatasta</button>
          </form>
         </div>
         <div class="modal-footer">
@@ -271,18 +286,22 @@
     {{#each row }}
       {{> orderItem}}
     {{/each}}
+
+    {{>insertProductModal}}
   </div>
 </template>
 
 <template name="orderItem">
   <div class="col-md-3 panel panel-default" style="padding-left: 0px; padding-right: 0px">
     <div class="panel-heading">
-      <h3 class="panel-title">
+      <h3 class="panel-title selectOrder">
         <span class="label label-default">
           <span class="glyphicon glyphicon-user" aria-hidden="true"></span>
           {{guestName}}    Tav:{{tableNum}}
         </span>
-
+        <button type="button" class="btn btn-default" data-toggle="modal" data-target="#insertProduct">        
+          <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+        </button>
         <span class="label label-default pull-right">{{bill}}€</span>
       </h3>
     </div>
@@ -317,6 +336,28 @@
       </button>
     </div>
 
+  </div>
+</template>
+
+<template name="insertProductModal">
+  <div id="insertProduct" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+
+      <!-- Modal content-->
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Va a Fatikà</h4>
+        </div>
+        <div class="modal-body">
+         {{>menu}}
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+
+    </div>
   </div>
 </template>
 

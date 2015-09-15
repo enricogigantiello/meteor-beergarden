@@ -197,7 +197,7 @@ Functions for login and social login
             all = all.slice(size);
         }
         chunks.push({row: all});
-        console.log(JSON.stringify(chunks));
+        
         return chunks;
       }
 
@@ -205,7 +205,8 @@ Functions for login and social login
 
   Template.orders.events({
     "click .selectOrder": function () {
-      Session.set('selectedOrder', this._id);      
+      Session.set('selectedOrder', this._id);
+          
     },
     "click .pay": function (){
       var selectedOrder = this._id;
@@ -225,7 +226,7 @@ Functions for login and social login
       var confirm = window.confirm("Delete the order: "+this.guestName +" Tab: "+this.tableNum+" ?");
       if(confirm){
         var selectedOrder = this._id;
-        console.log( selectedOrder);
+      
           
         Meteor.call('remOrder',selectedOrder);
       }
@@ -244,7 +245,7 @@ Functions for login and social login
                                   .fetch()
                                   .map(function(x) 
                                     { return x.type;}), true);
-        console.log(distinctEntries);
+        
 
         var result = [];
         for (var i = 0; i < distinctEntries.length; i++) {
@@ -258,7 +259,7 @@ Functions for login and social login
         }
   
 
-        console.log(result);
+        
 
         return result;
         
@@ -464,7 +465,7 @@ Functions for login and social login
   Template.schedules.events({
       'click .add' : function(){
        Session.set('selectedDay', this._id);
-       console.log(this._id);  
+       
     }
 
   })
@@ -481,56 +482,44 @@ Functions for login and social login
 
 
   Template.insertUserModal.events({
- "submit #addWorker": function (event) {
+    "submit #addWorker": function (event) {
      // Prevent default browser form submit
      event.preventDefault();
  
      // Get value from form element
      var role = event.target.role.value;
-      var worker = event.target.username.value;
-      console.log(Session.get('selectedDay'));
-      console.log(role);
-      console.log(worker);
-     // Insert a task into the collection
- 
-     // Clear form
-    // event.target.text.value = "";
+      var worker_id = event.target.username.value;
+      var day = Session.get('selectedDay');
+      
+      var worker = Meteor.users.findOne(worker_id);
+      var worker_data = {
+        _id: worker_id,
+        username: worker.username,
+        imageUrl: worker.imageUrl,
+        day_id: day
+      }
+
+      var element = {};
+      element[role]=worker_data;
+      Schedules.update(day, {$push: element});
+
    }
  });
 
-
-
-  
-
   Template.displayDate.events({
-  /*  'keyup .modify': function(){
-   console.log(this._id);
-   
-    var id = $(event.target).attr('id');
-    var role = $(event.target).attr('name');
-    var name = $(event.target).val();
-    var element = {};
-    element[role]=name;
-    Schedules.update(id, {$push: element});
-    
-    //var element={};
-    //element[name]=prod_elem;
-    //Products.update({ _id: documentId }, {$set: element});
-    } */
+    "click .delete": function(event){
 
-  
+      console.log(this._id+" " +$(event.target).attr('name'))
+    }
 
-  });
-
-  
+  })
 
 }
 
 if(Meteor.isServer){
-    Accounts.onCreateUser(function(options, user) {
-   console.log("done");
+
+  Accounts.onCreateUser(function(options, user) { 
     user.role = "worker";
-    console.log(user.services.hasOwnProperty("facebook"));
     if(user.services.hasOwnProperty("facebook")){
       user.imageUrl = "http://graph.facebook.com/"+user.services.facebook.id+"/picture/?type=large";
       user.username = user.services.facebook.name;
@@ -549,7 +538,7 @@ if(Meteor.isServer){
     });
 
 
-     Meteor.publish('workers', function() {
+    Meteor.publish('workers', function() {
    
       return Meteor.users.find({role: "worker"});
     });
@@ -564,7 +553,7 @@ if(Meteor.isServer){
     Meteor.methods({
 
     'addQuantity': function(selectedOrder, product_id,price){
-      console.log(selectedOrder+" "+product_id);
+     
 
       Orders.update(selectedOrder, {
             $inc: { bill: parseFloat( price) }
@@ -588,7 +577,7 @@ if(Meteor.isServer){
     },
 
     'remQuantity': function(selectedOrder, product_id,price){
-      console.log(selectedOrder+" "+product_id);
+     
 
       Orders.update(selectedOrder, {
             $inc: { bill: -parseFloat( price) }
@@ -641,7 +630,7 @@ if(Meteor.isServer){
     },
 
     'payItem': function(selectedOrder, item){
-      //console.log(selectedOrder+" "+product_id);
+     
       Orders.update(selectedOrder, {
             $push: { payedItems: item },
             //$inc: { bill: parseFloat(item.price) }
@@ -668,6 +657,19 @@ if(Meteor.isServer){
       );*/
                  
     },
+    'addWorker': function(day, worker_id, role){
+      var worker = Meteor.users.findOne(worker_id);
+      var worker_data = {
+        _id: worker_id,
+        username: worker.username,
+        imageUrl: worker.imageUrl
+      }
+      var element = {};
+      element[role]=worker_data;
+      Schedules.update(day, {$push: element});
+    
+      
+    }
 
 
     

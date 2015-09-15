@@ -13,8 +13,19 @@ pagamento di piu item cn sommatore
 
 update
 controlla eliminazione ordine
-schedule salvataggio e aggiunta faccine
 ricorda di cambiare ruolo al login per gli utenti
+
+
+
+
+
+
+problema
+se ricarico la pagina le schedule vanno a puttane
+
+
+
+
 
 
 
@@ -25,9 +36,6 @@ redirect dopo chiusura tavolo
 Recupera Immagini prodotti in vendita
 dividere menu in liste per tipo
 
-
-
-
 update
 passato tutti i prodotti in payed items al pagamento del conto
 cambiato l'item anche in payitem
@@ -37,3 +45,4 @@ mostra elem pagati nell elenco ordini
 aggiunto route per schedules
 aggiunto login meteor
 login facebbok
+calendario della settimana e aggiunta lavoratori
