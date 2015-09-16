@@ -206,6 +206,7 @@ Functions for login and social login
   Template.orders.events({
     "click .selectOrder": function () {
       Session.set('selectedOrder', this._id);
+
           
     },
     "click .pay": function (){
@@ -327,7 +328,7 @@ Functions for login and social login
 
   });
 
-  Template.listOrder.events({
+  Template.listItem.events({
     "click .delete": function (){
       var prod_id= this.product_id;
       
@@ -420,6 +421,22 @@ Functions for login and social login
 
   });
 
+  Template.orderItem.events({
+    'click .editOrder' : function(event){
+
+      var order = $(event.target).attr('name');
+    
+      
+      var selector = "#"+order+" .edit";
+        console.log(selector);
+      $(selector).show();
+    },
+    'focusout .focus' : function(){
+       console.log("lost");
+    $(".edit").hide();
+    }
+  })
+
   Template.schedules.helpers({
     'dates' : function(){
       var week = getCurrentWeek(new Date());
@@ -427,11 +444,40 @@ Functions for login and social login
       
 
       for (var i = 0; i < week.length; i++) {
-        var date = ""+week[i].getWeekDay()+", "+week[i].getDay()+"/"+week[i].getMonth()+"/"+week[i].getFullYear();
-        if(Schedules.find({dateObj : date }).fetch().length == 0){
+        //var date = ""+week[i].getWeekDay()+", "+week[i].getDay()+"/"+week[i].getMonth()+"/"+week[i].getFullYear();
+        if(Schedules.find({date : week[i] }).fetch().length != 0){
+
+          
+
+              
+          weekSchedule.push(Schedules.find({date : week[i] }).fetch()[0]);
+        }
+       
+      }
+      if (weekSchedule.length==0){weekSchedule = false;}
+      console.log(weekSchedule);
+
+      return weekSchedule;
+
+    },
+    'workers' : function(){ 
+      return Meteor.users.find({role : "worker"});
+      //Meteor.call('getWorkers');
+    }
+  });
+
+  Template.schedules.events({
+    'click .add' : function(){
+       Session.set('selectedDay', this._id);  
+    },
+    'click .generate' : function(){
+      var week = getCurrentWeek(new Date());
+      var weekSchedule = [];
+      for (var i = 0; i < week.length; i++) {
+         if(Schedules.find({date : week[i] }).fetch().length == 0){
           
           var daySchedule = {
-            dateObj: date,
+            //dateObj: date,
             date: week[i],
             cash: [],
             bar: [],
@@ -440,35 +486,15 @@ Functions for login and social login
             kitchen: []
           }
           Schedules.insert(daySchedule);
-          weekSchedule.push(daySchedule);
-
-        } else {         
-          weekSchedule.push(Schedules.find({date : week[i] }).fetch()[0]);
+     
         }
-        
-      }
-      return weekSchedule;
+      }  
+      Router.go('schedules'); 
 
-    },
-    'workers' : function(){
-    
-      return Meteor.users.find();
-
-
-      
-      //Meteor.call('getWorkers');
     }
 
 
   });
-
-  Template.schedules.events({
-      'click .add' : function(){
-       Session.set('selectedDay', this._id);
-       
-    }
-
-  })
 
   Template.insertUserModal.helpers({
     
@@ -506,10 +532,19 @@ Functions for login and social login
    }
  });
 
-  Template.displayDate.events({
-    "click .delete": function(event){
 
-      console.log(this._id+" " +$(event.target).attr('name'))
+  Template.displayDate.events({
+    //removes a worker from a schedule
+    "click .delete": function(event){
+      var role = $(event.target).attr('name');
+      var person = this._id;
+      var day = this.day_id;
+      var element = {};
+      element[role]= { _id: person}
+      Schedules.update(day,{ $pull:element });
+      
+      console.log(this._id+" " +this.day_id);
+
     }
 
   })
@@ -552,7 +587,7 @@ if(Meteor.isServer){
 
     Meteor.methods({
 
-    'addQuantity': function(selectedOrder, product_id,price){
+    'addQuantity': function(selectedOrder, product_id, price){
      
 
       Orders.update(selectedOrder, {

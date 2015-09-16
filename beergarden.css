@@ -1,3 +1,8 @@
+.edit  {
+    display: none;
+}
+
+
 .fixed { 
 	height:350px; 
 	position: fixed;

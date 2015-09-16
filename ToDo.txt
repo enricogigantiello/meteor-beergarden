@@ -14,14 +14,14 @@ pagamento di piu item cn sommatore
 update
 controlla eliminazione ordine
 ricorda di cambiare ruolo al login per gli utenti
+aggiutsa prodotti che non sommano
+modifica bill
+leva focus e recupera id da parente nell modify degli ordini
 
 
 
 
 
-
-problema
-se ricarico la pagina le schedule vanno a puttane
 
 
 
@@ -46,3 +46,6 @@ aggiunto route per schedules
 aggiunto login meteor
 login facebbok
 calendario della settimana e aggiunta lavoratori
+
+problema: se ricarico la pagina le schedule vanno a puttane -> risolto con tasto genera
+cambiato orders per modifica prezzo

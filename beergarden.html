@@ -86,7 +86,7 @@
        {{> product}}
      {{/each}}
   </div>
- </template>
+</template>
 
 <template name="home">
    {{> loginButtons}}
@@ -137,7 +137,7 @@
 
     <div class="row">
     <div class="col-xs-3 well" ></div>
-    
+    {{#if dates}}
     {{#each dates}}
     <div class="col-xs-1">
       {{date.getWeekDay}}, {{date.getDate}} {{date.getMonthName}}
@@ -147,18 +147,28 @@
       </button> 
     </div>
       
-    {{>insertUserModal workers}}
+    
     {{>displayDate day_schedule=this day_id=this._id}}
     </div>
     
     {{/each }}
+    {{else}}
+      <div class="generate">
+         <button type="button" class="btn btn-default">
+       <span class="glyphicon glyphicon-plus" aria-hidden="true" ></span> Genera
+      </button> 
+    </div>
+    {{/if}}
     <div class="col-xs-2 well" >
       
-    {{#each workers}}
-      <img src="{{imageUrl}}"  class="img-responsive img-circle" style="width: 50px; height: 50px;">{{username}}
-    {{/each}}</div>
+      {{#each workers}}
+        <img src="{{imageUrl}}"  class="img-responsive img-circle" style="width: 50px; height: 50px;">{{username}}
+      {{/each}}
+    </div>
 
     </div>
+
+    {{>insertUserModal workers}}
      
 </template>  
 
@@ -171,7 +181,7 @@
     <img src="{{imageUrl}}"  class="img-responsive img-circle" style="width: 30px; height: 30px;">
     <h6>{{username}}</h6>
     
-    <button class="delete" name="{{day_id}}">&times;</button>
+    <button class="delete" name="cash">&times;</button>
     {{/each}}
   </div>
 
@@ -180,28 +190,28 @@
     
     <img src="{{imageUrl}}"  class="img-responsive img-circle" style="width: 30px; height: 30px;">
     <h6>{{username}}</h6>
-    <button class="delete" name="{{day_id}}">&times;</button>
+    <button class="delete" name="bar">&times;</button>
     {{/each}}
       
   <h4>camerieri</h4>
     {{#each day_schedule.waiters}}
     <img src="{{imageUrl}}"  class="img-responsive img-circle" style="width: 30px; height: 30px;">
     <h6>{{username}}</h6>
-    <button class="delete" name="{{day_id}}">&times;</button>
+    <button class="delete" name="waiters">&times;</button>
     {{/each}}
 
   <h4>cucina</h4>
     {{#each day_schedule.kitchen}}
     <img src="{{imageUrl}}"  class="img-responsive img-circle" style="width: 30px; height: 30px;">
     <h6>{{username}}</h6>
-    <button class="delete" name="{{day_id}}">&times;</button>
+    <button class="delete" name="kitchen">&times;</button>
     {{/each}}
 
   <h4>porta</h4>
     {{#each day_schedule.door}}
     <img src="{{imageUrl}}"  class="img-responsive img-circle" style="width: 30px; height: 30px;">
     <h6>{{username}}</h6>
-    <button class="delete" name="{{day_id}}">&times;</button>
+    <button class="delete" name="door">&times;</button>
     {{/each}}
   
 </template> 
@@ -272,9 +282,7 @@
     <h2>Orders</h2>
     {{> addOrder}}
     <br>
-    <div class="row">
-        
-    </div>
+
     {{#each grouped_orders}}
       {{> orderRow }}
     {{/each}}
@@ -292,43 +300,52 @@
 </template>
 
 <template name="orderItem">
-  <div class="col-md-3 panel panel-default" style="padding-left: 0px; padding-right: 0px">
+  <div class="col-md-3 panel panel-default " style="padding-left: 0px; padding-right: 0px">
     <div class="panel-heading">
       <h3 class="panel-title selectOrder">
-        <span class="label label-default">
-          <span class="glyphicon glyphicon-user" aria-hidden="true"></span>
-          {{guestName}}    Tav:{{tableNum}}
-        </span>
-        <button type="button" class="btn btn-default" data-toggle="modal" data-target="#insertProduct">        
-          <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
-        </button>
-        <span class="label label-default pull-right">{{bill}}€</span>
+        <div class="row">
+          <div class="col-xs-4" >
+            <span class="label label-default">
+              <span class="glyphicon glyphicon-user" aria-hidden="true"></span>
+              {{guestName}}    Tav:{{tableNum}}
+            </span>
+
+          </div>
+            <div class="col-xs-1" >
+      
+          </div>
+          <div class="col-xs-1" >
+            <button class="btn btn-default"><span class="glyphicon glyphicon-edit editOrder "  name="{{_id}}" aria-hidden="true"></span></button>
+          </div>
+          
+          <div class="col-xs-1" >
+            <button type="button" class="btn btn-default" data-toggle="modal" data-target="#insertProduct">        
+              <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+            </button>
+          </div>
+        
+          <div class="col-xs-1" >
+            <a class = "selectOrder" href="/order/{{_id}}">
+               <button class="btn btn-default"><span class="glyphicon glyphicon-fullscreen" aria-hidden="true"></span></button>
+            </a>
+          </div>
+          <div class="col-xs-1" >
+      
+          </div>
+          <div class="col-xs-3" >
+            <div class="input-group">
+            <input type="text" class="form-control pull-right bill" value="{{bill}}" name="bill" placeholder="0">
+            <span class="input-group-addon">€</span>
+            </div>
+          </div>
+        </div>
       </h3>
     </div>
-    <a class = "selectOrder" href="/order/{{_id}}">
-    <div class="panel-body">
-      
-        <ul>
-          {{#each items}}
-            <li>
-              {{quantity}} {{name}} {{sub_total}}€
-            </li>
-          {{/each}} 
-         </ul>  
-
-         <br>
-         <h5> Payed </h5>    
-
-         <ul>
-          {{#each payedItems}}
-            <li><strike>
-              {{quantity}} {{name}} {{price}}€
-            </strike></li>
-          {{/each}} 
-         </ul>                           
-      
+    <!--<a class = "selectOrder" href="/order/{{_id}}">-->
+    <div class="panel-body selectOrder focus" id="{{_id}}">
+      {{>listItem}}      
     </div>
-    </a>
+    
     <div class="panel-footer">
       <button class="delete">&times;</button> 
     <button type="button" class="btn btn-default btn-xs pay pull-right">
@@ -388,71 +405,79 @@
     {{/each}}
 </template>
 
+
+
+<template name="listItem">
+   {{#each items}}
+    <div class="row ">
+
+      <div class="col-xs-1 edit">
+      <button class="delete">&times;</button>
+      </div>
+      
+      <div class="col-xs-6">
+        {{quantity}} {{name}} ({{menu_name}})
+       
+      </div>
+      
+        
+      <div class="col-xs-1  edit">
+        <div class="btn-group">
+        <button type="button" class="btn btn-xs btn-default lowerPrice" aria-label="Right Align"><span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span></button>
+        </div>
+        
+      </div>
+      <div class="col-xs-1 ">
+        {{sub_total}}€
+      </div>
+
+      <div class="col-xs-1  edit">
+        <div class="btn-group">
+          <button type="button" class="btn btn-xs btn-default raisePrice" aria-label="Right Align"><span class="glyphicon glyphicon-chevron-up" aria-hidden="true"></span></button>
+        </div>  
+      </div>  
+         
+      <div class="col-xs-2 edit">
+        <button type="button" class="btn btn-default btn-xs payItem"><span class="glyphicon glyphicon-euro" aria-hidden="true"></span> Pav</button>
+      </div>
+
+    </div>
+          
+    {{/each}}
+
+    <br>
+    {{#each payedItems}}
+      <div class="row ">
+        
+        <div class="col-xs-6">
+          {{quantity}} {{name}} ({{menu_name}})
+        </div>
+        
+        <div class="col-xs-6">
+          {{price}}€
+        </div>
+
+      
+
+      </div>
+            
+    {{/each}}      
+
+    
+</template>   
+
 <template name="listOrder">
   <div class="row con">
     <div class="col-xs-5 col-sm-5 col-md-5 col-lg-5 fixed">
       <h4>Order: {{guestName}} Table: {{tableNum}}  Bill: {{bill}}</h4>
+      {{>listItem}}
 
-      {{#each items}}
-        <div class="row ">
-
-          <div class="col-xs-1">
-          <button class="delete">&times;</button>
-          </div>
-          
-          <div class="col-xs-6">
-            {{quantity}} {{name}} ({{menu_name}})
-           
-          </div>
-          
-            
-          <div class="col-xs-1">
-            <div class="btn-group">
-            <button type="button" class="btn btn-xs btn-default lowerPrice" aria-label="Right Align"><span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span></button>
-            </div>
-            
-          </div>
-          <div class="col-xs-1">
-            {{sub_total}}€
-          </div>
-
-          <div class="col-xs-1">
-            <div class="btn-group">
-              <button type="button" class="btn btn-xs btn-default raisePrice" aria-label="Right Align"><span class="glyphicon glyphicon-chevron-up" aria-hidden="true"></span></button>
-            </div>  
-          </div>  
-             
-          <div class="col-xs-2">
-            <button type="button" class="btn btn-default btn-xs payItem"><span class="glyphicon glyphicon-euro" aria-hidden="true"></span> Pav</button>
-          </div>
-
-        </div>
-              
-      {{/each}}
           
       <button type="button" class="btn btn-default btn-xs pay">
         <span class="glyphicon glyphicon-euro" aria-hidden="true"></span> Puosésò
       </button>
 
-      <br>
-      <br>
-      {{#each payedItems}}
-        <div class="row ">
-          
-          <div class="col-xs-6">
-            {{quantity}} {{name}} ({{menu_name}})
-          </div>
-          
-          <div class="col-xs-6">
-            {{price}}€
-          </div>
-
-        
-
-        </div>
-              
-      {{/each}}
-
+   
     </div>
     <div class="col-xs-7 col-sm-7 col-md-7 col-lg-7 scrollit">
       <h2>Menu</h2>
