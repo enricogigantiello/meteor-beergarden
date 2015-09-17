@@ -206,6 +206,7 @@ Functions for login and social login
   Template.orders.events({
     "click .selectOrder": function () {
       Session.set('selectedOrder', this._id);
+      console.log(this._id);
 
           
     },
@@ -221,15 +222,6 @@ Functions for login and social login
       if(confirm){
         Meteor.call('payBill',selectedOrder); 
         Router.go('orders');       
-      }
-    },
-     "click .delete": function (){
-      var confirm = window.confirm("Delete the order: "+this.guestName +" Tab: "+this.tableNum+" ?");
-      if(confirm){
-        var selectedOrder = this._id;
-      
-          
-        Meteor.call('remOrder',selectedOrder);
       }
     }
 
@@ -329,16 +321,13 @@ Functions for login and social login
   });
 
   Template.listItem.events({
-    "click .delete": function (){
+    "click .delete": function (event, template){
+      var selectedOrder = $(event.target).closest('div .panel-body').attr('id');  
       var prod_id= this.product_id;
-      
-
       var quantity = parseInt(this.quantity);
-      
       var confirm = window.confirm("Delete one "+this.name+" from this order ?");
+
       if(confirm){
-        var selectedOrder = Session.get('selectedOrder');
-        //alert( Session.get('selectedOrder'));
         if (quantity > 1){
           Meteor.call('remQuantity',selectedOrder, prod_id, this.price);
 
@@ -349,6 +338,8 @@ Functions for login and social login
       }
     },
     "click .pay": function payBill(){
+      
+     
       var selectedOrder = Session.get('selectedOrder');
 
       var order = Orders.findOne(selectedOrder);
@@ -362,9 +353,9 @@ Functions for login and social login
         
       }
     },
-    "click .payItem": function (){
+    "click .payItem": function  (event, template){
+       var selectedOrder = $(event.target).closest('div .panel-body').attr('id');
 
-      var selectedOrder = Session.get('selectedOrder');
      
       var num = Orders.findOne( selectedOrder).items.length;
 
@@ -429,12 +420,22 @@ Functions for login and social login
       
       var selector = "#"+order+" .edit";
         console.log(selector);
-      $(selector).show();
+      $(selector).fadeToggle();
     },
-    'focusout .focus' : function(){
+
+     "click .deleteOrder": function (){
+      var confirm = window.confirm("Delete the order: "+this.guestName +" Tab: "+this.tableNum+" ?");
+      if(confirm){
+        var selectedOrder = this._id;
+      
+          
+        Meteor.call('remOrder',selectedOrder);
+      }
+    }
+    /*'focusout .focus' : function(){
        console.log("lost");
     $(".edit").hide();
-    }
+    }*/
   })
 
   Template.schedules.helpers({
