@@ -1,3 +1,3 @@
-cd C:\Users\PASQUALE\meteor-beergarden-develop
+cd C:\Users\enricogiga\meteor-beergarden
 
 meteor

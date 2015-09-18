@@ -14,6 +14,7 @@ Router.route('/order/:_id', {
     }
 });
 Router.route('/manageProducts');
+Router.route('/manageUsers');
 Router.route('/orders');
 Router.route('/schedules');
 
@@ -48,6 +49,40 @@ Functions for login and social login
     }
   });
   
+  Template.manageUsers.helpers({
+    users: function () {
+       //return Products.find();
+      return Meteor.users.find();
+    },
+    
+  });
+
+  Template.manageUsers.events({
+    "click .delete": function () {
+      var confirm = window.confirm("Delete this product?");
+      if(confirm){
+        console.log("delete " + this._id)
+      
+      }
+    },    
+    'keyup .form-control': function(){
+    var user = this._id;
+    var name = $(event.target).attr('name');
+    var attr = $(event.target).val();
+    
+    Meteor.call('updateUser',user,name,attr) 
+    console.log("update "+name+" "+attr+" "+user);
+    },
+    'focusout .select' : function(){
+    var user = this._id;
+    var name = $(event.target).attr('name');
+    var attr = $(event.target).val();
+    Meteor.call('updateUser',user,name,attr)
+    console.log("update "+name+" "+attr+" "+user);
+
+    }
+
+  })
 
 
 
@@ -431,6 +466,14 @@ Functions for login and social login
           
         Meteor.call('remOrder',selectedOrder);
       }
+    },
+    'keyup .form-control': function(){
+    var order = this._id;
+    var name = $(event.target).attr('name');
+    var attr = $(event.target).val();
+    
+    Meteor.call('updateOrder',order,name,attr) 
+    console.log("update "+name+" "+attr+" "+order);
     }
     /*'focusout .focus' : function(){
        console.log("lost");
@@ -555,7 +598,7 @@ Functions for login and social login
 if(Meteor.isServer){
 
   Accounts.onCreateUser(function(options, user) { 
-    user.role = "worker";
+    user.role = "user";
     if(user.services.hasOwnProperty("facebook")){
       user.imageUrl = "http://graph.facebook.com/"+user.services.facebook.id+"/picture/?type=large";
       user.username = user.services.facebook.name;
@@ -703,6 +746,26 @@ if(Meteor.isServer){
       var element = {};
       element[role]=worker_data;
       Schedules.update(day, {$push: element});
+    
+      
+    },
+    'updateUser': function(user, name, attr){
+      var element={};
+    element[name]=attr;
+    //Products.update({ _id: documentId }, {$set: element});
+    
+    Meteor.users.update(user, {$set: element});
+    
+    
+      
+    },
+    'updateOrder': function(order, name, attr){
+      var element={};
+    element[name]=attr;
+    //Products.update({ _id: documentId }, {$set: element});
+    
+    Orders.update(order, {$set: element});
+    
     
       
     }
