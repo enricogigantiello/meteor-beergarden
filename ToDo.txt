@@ -15,8 +15,12 @@ update
 controlla eliminazione ordine
 
 aggiutsa prodotti che non sommano
+cambia id anche al menu modal
+aggiungi log degli eventi dell ordine
 
 mobile
+aggiungi tempo da quando è stato ordinato e nome cameriere
+aggiungi viewed, ready
 
 
 
@@ -50,3 +54,7 @@ calendario della settimana e aggiunta lavoratori
 problema: se ricarico la pagina le schedule vanno a puttane -> risolto con tasto genera
 cambiato orders per modifica prezzo
 manageusers
+
+
+
+
