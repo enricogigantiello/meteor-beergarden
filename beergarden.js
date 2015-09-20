@@ -88,12 +88,79 @@ console.log("update "+name+" "+attr+" "+user);
 var user = this._id;
 var name = $(event.target).attr('name');
 var attr = $(event.target).val();
-Meteor.call('updateUser',user,name,attr)
+Meteor.call('updateUser',user,name,attr);
 console.log("update "+name+" "+attr+" "+user);
 
 }
 
 })
+
+Template.variation_modals.helpers({
+food_ingredient: function () {
+   //return Products.find();
+
+  return Products.find({type:"food-ingredient"});
+},
+'isshown': function(){
+	var selectedProduct=Session.get("selectedProduct"),
+	ingredient_id=this._id;
+	
+	var cursor = Products.find({  $and : [  {ingredients: {$elemMatch: {_id:ingredient_id}}},  {_id: selectedProduct }  ]});
+
+	
+	if(cursor.count()>0){
+		return "checked";
+	} else {
+		return "";
+	}
+},
+'isselected': function(){
+	var selectedProduct=Session.get("selectedProduct"),
+	ingredient_id=this._id;
+	
+	var cursor = Products.find({  $and : [  {ingredients: {$elemMatch: {_id:ingredient_id, selected:true}}},  {_id: selectedProduct }  ]});
+
+	
+	if(cursor.count()>0){
+		return "checked";
+	} else {
+		return "";
+	}
+	
+}
+
+});
+
+Template.variation_modals.events({
+"click .show" : function(){
+	
+    if($(event.target).is(':checked')) {
+		var ingredient={
+			_id:this._id,
+			name:this.name,
+			selected:$("#sel"+this._id).is(':checked')
+			
+		};
+       
+	   Products.update(Session.get("selectedProduct"), {
+	   $push: { ingredients: ingredient }}); 
+	} else {
+		
+		Products.update(Session.get("selectedProduct"),{ 
+			$pull: { ingredients: { _id: this._id } }},{ multi: false });
+		}
+},
+
+"click .selected" : function(){
+	var checked= $(event.target).is(':checked');
+	var prod_id= Session.get("selectedProduct");
+	var ingredient_id= this._id;
+	Meteor.call("updateCheckedIngredients",prod_id,ingredient_id,checked);
+	
+}
+
+	
+});
 
 Template.manageProducts.helpers({
 products: function () {
@@ -117,6 +184,7 @@ Template.manageProducts.events({
   var served = event.target.served.value;
   var menu_name = event.target.menu_name.value;
   var sellable = event.target.sellable.checked;
+  var ingredients = [];
 
   // Insert a task into the collection
   Products.insert({
@@ -149,6 +217,14 @@ Template.manageProducts.events({
 });
 
 Template.product.helpers({
+'isfood': function(type){
+	if(type == "food"){
+		return "#foodmodal"
+	}else{
+		return "#drinkmodal"
+	}
+	
+},
 'isfinished': function(){
 	var isFinished = this.finished;
 	if(isFinished){
@@ -168,6 +244,10 @@ Template.product.helpers({
 });
 
 Template.product.events({
+"click .ingredient" : function(){
+	Session.set("selectedProduct",this._id);
+	console.log(this._id);
+},	
 "click .toggle-finished": function () {
   // Set the checked property to the opposite of its current value
   Products.update(this._id, {
@@ -274,7 +354,7 @@ Template.menu.helpers({
   'menu_products': function(){
    // var list = Products.find({},{ type: 1, _id: 0 });
 	var distinctEntries = _.uniq(Products.find(
-								  {}, 
+								  {sellable: true}, 
 								  {sort: {type: 1}, fields: {type: true}}
 								  )
 							  .fetch()
@@ -658,7 +738,7 @@ Template.menuMobile.helpers({
   'menu_products': function(){
    // var list = Products.find({},{ type: 1, _id: 0 });
 	var distinctEntries = _.uniq(Products.find(
-								  {}, 
+								  {sellable: true}, 
 								  {sort: {type: 1}, fields: {type: true}}
 								  )
 							  .fetch()
@@ -686,10 +766,47 @@ Template.menuMobile.helpers({
   'type_list' : function(){
 	return Products.find({ finished: false, sellable: true}, {sort: {type: 1, served: 1, name: 1}});
 
-  }
+  },
 
+  'hasingredients' : function(){
+	if(this.hasOwnProperty('ingredients')){
+	  if(this.ingredients.length > 0){
+		  return true;
+		  
+	  }
+	  
+	} 
+	return false;
+  }
 });
+
+Template.menuMobile.events({
+  "click .add": function () {
+  var selectedOrder = $(event.target).closest('div .orderId').attr('id');
+  if(this.hasOwnProperty('ingredients')){
+	  if(this.ingredients.length > 0){
+		  
+		  $("#variation_modal"+this._id).modal();
+		  
+	  }
+	  
+  } 
+  
+  var product_id = this._id;
+	} 
+});
+
+Template.product_variation_modals.helpers({
+	//only retrieves products with ingredients to build the modals
+	'products' : function(){
+		
+		return Products.find( { $and: [  { ingredients: { $exists: true } },{ $where: "this.ingredients.length > 0" } ] } );
+	}
+});
+
+
 }
+
 
 if(Meteor.isServer){
 
@@ -854,11 +971,20 @@ Meteor.users.update(user, {$set: element});
 element[name]=attr;
 //Products.update({ _id: documentId }, {$set: element});
 
-Orders.update(order, {$set: element});
+Orders.update(order, {$set: element}); 
+},
 
 
-  
+"updateCheckedIngredients": function(prod_id,ingredient_id,checked){
+	Products.update(
+   { _id: prod_id , "ingredients._id": ingredient_id },
+   { $set: { "ingredients.$.selected" : checked }
+	}
+   );
+	
 }
+	
+	 
 
 
 
