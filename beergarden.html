@@ -1,185 +1,41 @@
 
- 
-<template name="manageUsers">
-  {{#each users}}
-  <form class="form-inline" role="form">
-    
-    <div class="well">
-      <div class="row">
-        
-        <div class="col-lg-3">        
-           <input type="text" class="form-control" value="{{username}}" name="username"  placeholder="username">
-        </div>
-        <div class="col-lg-3">        
-          {{role}}
-           <select class="form-control select" name="role">
-            <option value="admin">admin</option>
-            <option value="worker">worker</option>
-            <option value="username">user</option>
-            
-          </select> 
-        </div>
-        <div class="col-lg-3">        
-           <input type="text" class="form-control" value="{{imageUrl}}" name="imageUrl"  placeholder="imageUrl">
-        </div>
-        <div class="col-lg-1">
-          <img src="{{imageUrl}}"  class="img-responsive img-circle">
-         
-        </div>
-        <div class="col-lg-2">
-          <button class="delete">&times;</button>
-         
-        </div>
+<template name="main">
+	<div class="container-fluid">
+	{{> navigation}}
+	{{> yield}}
+	</div>
+</template>       
 
-         
-        
-      </div>
-   </div>
-   
-
-  </form>
-  {{/each}}
-
-</template>
-<template name="product">
-
-	 
-   <form class="form-inline" role="form">
-    <div class="form-group row well">
-      <div class="col-xs-1">        
-         <input type="text" class="form-control" value="{{name}}" name="name"  placeholder="name">
-      </div>
-
-      <div class="col-xs-1">      
-       <input type="text" class="form-control" value="{{price}}" name="price" placeholder="price 4.5">
-      </div>
-
-      <div class="col-xs-1">
-        <input type="text" class="form-control" value="{{image}}" name="image" placeholder="image" >
-      </div>
-
-      <div class="col-xs-1">
-         <input type="text" class="form-control" value="{{volume}}" name="volume" placeholder="volume 0.2" >
-      </div>
-
-      <div class="col-xs-1">
-        <input type="text" class="form-control" name="type" value="{{type}}" placeholder="type" />
-      </div>
-
-      <div class="col-xs-1">
-        <input type="text" class="form-control" value="{{served}}" name="served"  placeholder="served" />
-      </div>
-
-      <div class="col-xs-1">
-        <input type="text" class="form-control" value="{{description}}" name="description"  placeholder="description"/>
-      </div>
-
-      <div class="col-xs-1">
-        <input type="text" class="form-control" value="{{menu_name}}" name="menu_name"  placeholder="menu name" />
-    
-      </div>
-       <div class="col-xs-1">
-		<div class="ingredient">
-         <button type="button" class="btn btn-default" data-toggle="modal" data-target="{{isfood type}}">
-       <span class="glyphicon glyphicon-plus" aria-hidden="true" ></span> Variazioni
-      </button> 
-    </div>
-      </div>
-
-      <div class="col-xs-1">
-       
-        <label for="finished">finished</label>
-        <input type="checkbox" {{isfinished}}  id="finished" class="toggle-finished" />
-      </div>
-
-      <div class="col-xs-1">
-        <label for="sellable">sellable</label>
-
-        <input type="checkbox" {{issellable}} id="sellable" class="toggle-sellable" />
-      </div>
-
-     
-
-      <div class="col-xs-1">
-        <img src="/images/{{image}}"  class="img-responsive img-circle">
-        <button class="delete">&times;</button>
-      </div>
-
-      
-
-    </div>
-    </form>
-
-	
- </template>
- 
- 
- <template name="variation_modals">
-	<div id="foodmodal" class="modal fade" role="dialog">
-    <div class="modal-dialog">
-
-      <!-- Modal content-->
-      <div class="modal-content">
-        <div class="modal-header">
-          <button type="button" class="close" data-dismiss="modal">&times;</button>
-          <h4 class="modal-title">Aggiungi Variazione</h4>
-        </div>
-        <div class="modal-body">
-		
-		{{#each food_ingredient}}
-					 
-					  <div class="row well well-sm">
-						<div class="col-sm-4">
-						{{name}}
-						     
-					  </div>   
-					  <div class="col-sm-4">
-					  
-						<label class="checkbox-inline"><input class="show" type="checkbox" value="" {{isshown}} name="show">show</label>  
-						     
-					  </div>
-					  <div class="col-sm-4">
-						<label class="checkbox-inline"><input id="sel{{_id}}" class="selected" {{isselected}} type="checkbox" value="" name="selected">selected</label>  
-						     
-					  </div>
-					</div>
-				  
-		{{/each}}
-		
-         
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-        </div>
-      </div>
-
-    </div>
-  </div>
- </template>
-
-
- <template name="manageProducts">
+<template name="navigation">
+  {{#if currentUser}}
+  <nav class="navbar  navbar-inverse">
   <div class="container-fluid">
-    <form class="new-prod form-inline" role="form">
-     <input type="text" class="form-control" name="name"  placeholder="name" />
-     <input type="text" class="form-control" name="price" placeholder="price 4.5" />
-     <input type="text" class="form-control" name="image" placeholder="image" />
-     <input type="text" class="form-control" name="volume" placeholder="volume 0.2" />
-     <input type="text" class="form-control" name="type" placeholder="type" />
-     <input type="text" class="form-control" name="served" placeholder="served" />
-     <input type="text" class="form-control" name="menu_name" placeholder="menu_name" />
-     <input type="text" class="form-control" name="description" placeholder="description" />
-     <label >sellable</label>
-     <input type="checkbox" name="sellable" />
-     <input type="submit" value="Submit">
-    </form>
-    <br><br>
-    {{#each products}}
-       {{> product}}
-     {{/each}}
-	 {{>variation_modals}}
+    <div class="navbar-header">
+      <a class="navbar-brand" href="#">BeerGarden</a>
+    </div>
+    <div>
+      <ul class="nav navbar-nav ">
+        
+        <li><a href="{{pathFor route='home'}}">Home</a></li>
+		<li><a href="{{pathFor route='manageCategories'}}">manageCategories</a></li>
+		<li><a href="{{pathFor route='manageCategoryProducts'}}">manageCategoryProducts</a></li>
+        <li><a href="{{pathFor route='manageProducts'}}">manageProducts</a></li>
+        <li><a href="{{pathFor route='categoryOrders'}}">categoryOrders</a></li>
+        <li><a href="{{pathFor route='orders'}}">orders</a></li>
+        <li><a href="{{pathFor route='schedules'}}">schedules</a></li>
+        <li><a href="{{pathFor route='manageUsers'}}">manageUsers</a></li>
+		<li><a href="{{pathFor route='mobileOrders'}}">mobileOrders</a></li>
+      </ul>
+    </div>
   </div>
-</template>
+</nav>
+
+  
+   
+ 
+  {{/if}}
+        
+</template> 
 
 <template name="home">
    {{> loginButtons}}
@@ -190,38 +46,379 @@
    {{/if}}
 </template>
 
-<template name="main">
-    
-    {{> navigation}}
-    
-    {{> yield}}  
-</template>       
-
-<template name="navigation">
-  {{#if currentUser}}
-  <div class="row">
-    <div class="col-xs-6">
-      <ul class="list-inline">
-        <li><a href="{{pathFor route='home'}}">Home</a></li>
-        <li><a href="{{pathFor route='manageProducts'}}">manageProducts</a></li>
-        <li><a href="{{pathFor route='orders'}}">orders</a></li>
-        <li><a href="{{pathFor route='schedules'}}">schedules</a></li>
-        <li><a href="{{pathFor route='manageUsers'}}">manageUsers</a></li>
-		<li><a href="{{pathFor route='mobileOrders'}}">mobileOrders</a></li>
-       
-        
-      </ul>
-    </div>
-    <div class="col-xs-6">
+<template name="manageCategories">
+	<form id="new-cat" role="form">
+     <input type="text" class="form-control" name="name"  id="new_cat_name" placeholder="name" />
+	 <div id="new_fields_container"></div>
      
-      
-      
-      
-    </div>
-  </div>
-  {{/if}}
-        
+     <label >sellable</label>
+     <input type="checkbox" name="sellable" />
+	 <input type="button" class = "add_new_field" value="Add Field">
+     <input type="submit" value="Save">
+    </form>
+    <br><br>
+	<div class="row row-eq-height">
+		{{#each categories}}
+		<div class="well">
+		<div><h1>{{name}}</h1><a href="#" name = "{{this}}" category = "{{../_id}}" class="remove_cat">&times;</a></div>
+		<h6>Selezionando sellable i prodotti appartenenti a questa categoria verranno mostrati nel menu delle ordinazioni e dovranno possedere i campi necessari ad essere mostrati sul menu</h6>
+		<div><label for="sellable">sellable</label>
+		<input type="checkbox" {{issellable}} id="sellable" class="toggle-sellable" /></div>
+		<input type="text"  name="finished"  placeholder="finished" readonly/>
+			{{#each menu_fields}}
+			<input type="text"  name="{{this}}"  placeholder="{{this}}" readonly/>
+			{{/each}}
+			
+			{{#each fields}}
+			<div><input type="text"  name="{{this}}"  value="{{this}}" /><a href="#" name = "{{this}}" category = "{{../_id}}" class="update_remove_field">Rem</a></div>
+			{{/each}}
+			<div><input type="text" class="new-field" /><a href="#"  class="add_field">Add</a></div>
+	
+		
+		</div>
+		{{/each}}
+	</div>
 </template> 
+ 
+
+<template name="manageCategoryProducts">
+  <div class="well">
+	<form role="form-inlne" id="add_category_product">
+		<h1>Aggiungi Prodotto</h1>
+		<div class="form-group">
+             <label for="selectCat">Categoria:</label>
+             <select class="form-control" id="selectCat">
+				<option>Scelgi Categoria</option>
+                {{#each categories}}
+                  <option value="{{_id}}">{{name}}</option>
+                {{/each}}   
+             </select>
+        </div>
+		<div class="row">
+			<div class="col-sm-3 col-md-3">
+				<div id="fixed_fields"></div>
+				<div id="custom_fields"></div>
+			</div>
+			<div class="col-sm-9 col-md-9">
+				<div id="ingredients_field"></div>
+			</div>
+		</div>
+	<button type="submit" class="btn btn-default" >Salva</button>
+    </form>  
+  </div>
+  
+  <div id="displayProducts">
+	{{#each categories}}
+		<div class="well">
+			<h2>{{name}}</h2>
+			{{#each prods}}
+			<div class="row productContainer" >
+				<div class="col-lg-3 col-md-3 col-sm-3">
+					<h4>Modifica Dati:</h4>
+					<form class="form-inline" role="form">
+						 <input type="text" class="editableField" prodid="{{_id}}" value="{{name}}" name="name"  placeholder="name">
+					{{#each ../menu_fields}}
+						{{#if notIngredient}}
+						<input type="text" class="editableField" prodid="{{../_id}}" value="{{fieldvalue}}" name="{{this}}"  placeholder="{{this}}">
+						{{/if}}
+						
+					{{/each}}
+					{{#each ../fields}}
+						<input type="text" class="editableField" prodid="{{../_id}}" value="{{fieldvalue}}" name="{{this}}"  placeholder="{{this}}">
+						
+					{{/each}}
+					</form>
+				</div>
+				<div class="col-lg-2 col-md-2 col-sm-2">
+					{{#if ../sellable}}
+					<h4>Anteprima:</h4>
+					<div class="productPreview">
+						<h5>{{menu_name}}</h5>
+						<img src="/images/{{image}}"  class="img-responsive img-circle" style="width: 100px; height: 100px;">
+					</div>
+					{{/if}}
+				</div>
+				
+				<div class="col-lg-2 col-md-2 col-sm-2">
+					{{#if ../sellable}}
+						<h4>Gestione Variazioni</h4>
+						{{#each categories}}
+						<div><label class="checkbox-inline"><input type="checkbox" class="addCategoryToIngredients" prodid="{{../_id}}" {{checkedCategory}}>{{name}}</label></div>
+							
+						{{/each}}
+						
+					{{/if}}
+				</div>
+				
+				<div class="col-lg-2 col-md-2 col-sm-2">
+					{{#if ../sellable}}
+					<h4>Ingredienti Fissi</h4>
+					<button type="button" class="btn btn-info" data-toggle="collapse" data-target="#fixedIngredients{{_id}}">Mostra</button>
+					<div id= "fixedIngredients{{_id}}" class="collapse">
+					
+						{{#each selectedCategoriesProducts}}
+						<label class="checkbox"><input type="checkbox" class="addFixedIngredient" prodid="{{../_id}}" {{checkedIngredient}}>{{name}}</label>
+						{{/each}}
+					</div>
+							
+						
+						
+					{{/if}}
+				</div>
+				
+				<div class="col-lg-2 col-md-2 col-sm-2">
+					
+						<div>
+						<h4>Gestione Scorta</h4>
+						<label class="checkbox-inline"><input type="checkbox" class="toggle-finished" {{isfinished}}>finito</label>
+						</div>
+				</div>
+				
+				<div class="col-lg-1 col-md-1 col-sm-1">
+					<button type="button" class="btn btn-default btn-md btn-danger deleteProduct">
+						<span class="glyphicon glyphicon-remove" aria-hidden="true"></span> Elimina
+					</button>
+
+				</div>
+				
+				
+			</div>
+			{{/each}}
+		</div>
+    {{/each}}
+  </div>  
+  
+  {{>categoryMenu}}
+</template>
+
+<template name="categoryMenu">
+<div class="container-fluid">
+  
+    <div class="tabs-left row">
+        <ul class="nav nav-tabs">
+		{{#each sellable_categories}}
+          <li class="{{firstCategory}}"><a href="#{{_id}}" data-toggle="tab"><h4>{{name}}</h4></a></li>   
+		{{/each}}
+        </ul>
+        <div class="tab-contents">
+		{{#each sellable_categories}}
+		<div class="tab-pane {{firstCategory}}" id="{{_id}}">
+			<ul class="list-inline" >
+		  {{#each products}}
+			 <li class="menu_item" id="{{_id}}">
+			  <div class="row">
+				<div class="col-sm-12">
+				{{menu_name}}
+				<a href="#" class = "add">
+				  <img  src="/images/{{image}}" alt="{{name}}" class="img-responsive img-circle" style="width: 80px; height: 80px;">
+				</a>     
+			  </div>     
+			</div>
+		  </li>
+		  {{/each}}
+		  </ul>
+		</div>
+	  
+		{{/each}}
+		 
+        </div><!-- /tab-content -->
+    </div><!-- /tabbable -->
+	
+	<div id="variedProduct"></div>
+	
+	<div id="variations">
+		
+	</div>
+   
+</div><!-- /container -->
+
+
+
+
+   
+</template>
+
+<template name="categoryOrders">
+	<h2>Orders</h2>
+    {{> addCategoryOrder}}
+    <br>
+
+    {{#each grouped_orders}}
+      {{> categoryOrderRow }}
+    {{/each}}
+</template>
+
+<template name="addCategoryOrder">
+  <div class="row">
+    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4">
+    </div>
+    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4 well">
+      <form>Create a order:
+        <input type="text" class="form-control" placeholder="guest name " name="guestName">
+        <input type="text" class="form-control" placeholder="table num " name="tableNum">
+        <button type="submit" class="btn btn-default">
+        <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add
+        </button>
+    </form>
+    </div>
+    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4"></div>
+  </div>
+</template>  
+
+<template name='categoryOrderRow'>
+  <div class='row span12' style="display:flex;">
+    {{#each row }}
+      {{> categoryOrderItem}}
+    {{/each}}
+
+    {{>insertProductModal}}
+  </div>
+</template>
+
+<template name="categoryOrderItem">
+  <div class="col-lg-4 col-md-6 col-sm-12 col-xs-12 panel panel-info " style="padding-left: 0px; padding-right: 0px">
+    <div class="panel-heading">
+      <h3 class="panel-title selectOrder">
+		<div class="row">
+			<div class="col-lg-12 col-md-12 col-xs-12 text-center" >
+				<h4>Nome: {{guestName}}</h4>
+			</div>  
+        </div>
+		<div class="row">
+			<div class="col-lg-2 col-md-2 col-xs-2 text-center" >
+				
+				<button type="button" class="deleteOrder btn btn-danger">&times;</button> 
+				
+			</div>
+			<div class="col-lg-8 col-md-8 col-xs-8 text-center" >
+				<h4>{{minutesAgo}}</h4>
+				
+			</div>
+			<div class="col-lg-2 col-md-2 col-xs-2 text-center" >
+				
+				 
+				<button type="button" class="btn btn-primary btn-sm payBill pull-right">
+				<span class="glyphicon glyphicon-euro" aria-hidden="true"></span> Puosésò
+				</button>
+			</div>			
+        </div>
+        <div class="row">
+          <div class="col-lg-4 col-md-4 col-xs-4" >
+			<h4>Tav: {{tableNum}}</h4>
+          </div>
+            <div class="col-lg-1 col-md-1 col-xs-1" >
+      
+          </div>
+          <!--<div class="col-xs-1" >
+            <button class="btn btn-default"><span class="glyphicon glyphicon-edit editOrder "  name="{{_id}}" aria-hidden="true"></span></button>
+          </div>-->
+          
+          <div class="col-lg-1 col-md-1 col-xs-1" >
+            <button type="button" class="btn btn-default" data-toggle="modal" data-target="#insertProduct">        
+              <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+            </button>
+          </div>
+        
+          <div class="col-lg-1 col-md-1 col-xs-1" >
+           
+           
+          </div>
+          <div class="col-lg-1 col-md-1 col-xs-1" >
+      
+          </div>
+          <div class="col-lg-4 col-md-4 col-xs-4" >
+            <div class="input-group">
+            <input type="text" class="form-control pull-right bill" value="{{bill}}" name="bill" placeholder="0">
+            <span class="input-group-addon">€</span>
+            </div>
+          </div>
+        </div>
+      </h3>
+    </div>
+    <!--<a class = "selectOrder" href="/order/{{_id}}">-->
+    <div class="panel-body selectOrder focus" id="{{_id}}">
+      {{>categoryListItem}}      
+    </div>
+    
+    
+
+  </div>
+</template>
+
+<template name="categoryListItem">
+   {{#each items}}
+    <div class="row ">
+
+      <div class="col-xs-1">
+      <button class="delete">&times;</button>
+      </div>
+      
+      <div class="col-xs-6">
+        {{quantity}} {{name}} ({{menu_name}})
+       
+      </div>
+      
+        
+      <div class="col-xs-1">
+        <div class="btn-group">
+        <button type="button" class="btn btn-xs btn-default lowerPrice" aria-label="Right Align"><span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span></button>
+        </div>
+        
+      </div>
+      <div class="col-xs-1 ">
+        {{sub_total}}€
+      </div>
+
+      <div class="col-xs-1  ">
+        <div class="btn-group">
+          <button type="button" class="btn btn-xs btn-default raisePrice" aria-label="Right Align"><span class="glyphicon glyphicon-chevron-up" aria-hidden="true"></span></button>
+        </div>  
+      </div>  
+         
+      <div class="col-xs-2 ">
+        <button type="button" class="btn btn-default btn-xs payItem"><span class="glyphicon glyphicon-euro" aria-hidden="true"></span> Pav</button>
+      </div>
+
+    </div>
+          
+    {{/each}}
+
+    <br>
+    {{#each payedItems}}
+      <div class="row ">
+        
+        <div class="col-xs-6">
+          <strike>{{quantity}} {{name}} ({{menu_name}})</strike>
+        </div>
+        
+        <div class="col-xs-6">
+          {{price}}€
+        </div>
+
+      
+
+      </div>
+            
+    {{/each}}      
+
+    
+</template>  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 <template name="schedules">
     
@@ -354,9 +551,9 @@
 
 <template name="addOrder">
   <div class="row">
-    <div class="col-sm-4">
+    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4">
     </div>
-    <div class="col-sm-4 well">
+    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4 well">
       <form>Create a order:
         <input type="text" class="form-control" placeholder="guest name " name="guestName">
         <input type="text" class="form-control" placeholder="table num " name="tableNum">
@@ -365,7 +562,7 @@
         </button>
     </form>
     </div>
-    <div class="col-sm-4"></div>
+    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4"></div>
   </div>
 </template>  
 
@@ -447,6 +644,143 @@
   </div>
 </template>
 
+<template name="product">
+
+	 
+   <form class="form-inline" role="form">
+    <div class="form-group row well">
+      <div class="col-xs-1">        
+         <input type="text" class="form-control" value="{{name}}" name="name"  placeholder="name">
+      </div>
+
+      <div class="col-xs-1">      
+       <input type="text" class="form-control" value="{{price}}" name="price" placeholder="price 4.5">
+      </div>
+
+      <div class="col-xs-1">
+        <input type="text" class="form-control" value="{{image}}" name="image" placeholder="image" >
+      </div>
+
+      <div class="col-xs-1">
+         <input type="text" class="form-control" value="{{volume}}" name="volume" placeholder="volume 0.2" >
+      </div>
+
+      <div class="col-xs-1">
+        <input type="text" class="form-control" name="type" value="{{type}}" placeholder="type" />
+      </div>
+
+      <div class="col-xs-1">
+        <input type="text" class="form-control" value="{{served}}" name="served"  placeholder="served" />
+      </div>
+
+      <div class="col-xs-1">
+        <input type="text" class="form-control" value="{{description}}" name="description"  placeholder="description"/>
+      </div>
+
+      <div class="col-xs-1">
+        <input type="text" class="form-control" value="{{menu_name}}" name="menu_name"  placeholder="menu name" />
+    
+      </div>
+       <div class="col-xs-1">
+		<div class="ingredient">
+         <button type="button" class="btn btn-default" data-toggle="modal" data-target="{{isfood type}}">
+       <span class="glyphicon glyphicon-plus" aria-hidden="true" ></span> Variazioni
+      </button> 
+    </div>
+      </div>
+
+      <div class="col-xs-1">
+       
+        <label for="finished">finished</label>
+        <input type="checkbox" {{isfinished}}  id="finished" class="toggle-finished" />
+      </div>
+
+      <div class="col-xs-1">
+        <label for="sellable">sellable</label>
+
+        <input type="checkbox" {{issellable}} id="sellable" class="toggle-sellable" />
+      </div>
+
+     
+
+      <div class="col-xs-1">
+        <img src="/images/{{image}}"  class="img-responsive img-circle">
+        <button class="delete">&times;</button>
+      </div>
+
+      
+
+    </div>
+    </form>
+
+	
+ </template>
+ 
+ <template name="variation_modals">
+	<div id="foodmodal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+
+      <!-- Modal content-->
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Aggiungi Variazione</h4>
+        </div>
+        <div class="modal-body">
+		
+		{{#each food_ingredient}}
+					 
+					  <div class="row well well-sm">
+						<div class="col-sm-4">
+						{{name}}
+						     
+					  </div>   
+					  <div class="col-sm-4">
+					  
+						<label class="checkbox-inline"><input class="show" type="checkbox" value="" {{isshown}} name="show">show</label>  
+						     
+					  </div>
+					  <div class="col-sm-4">
+						<label class="checkbox-inline"><input id="sel{{_id}}" class="selected" {{isselected}} type="checkbox" value="" name="selected">selected</label>  
+						     
+					  </div>
+					</div>
+				  
+		{{/each}}
+		
+         
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+ </template>
+
+ <template name="manageProducts">
+  <div class="container-fluid">
+    <form class="new-prod form-inline" role="form">
+     <input type="text" class="form-control" name="name"  placeholder="name" />
+     <input type="text" class="form-control" name="price" placeholder="price 4.5" />
+     <input type="text" class="form-control" name="image" placeholder="image" />
+     <input type="text" class="form-control" name="volume" placeholder="volume 0.2" />
+     <input type="text" class="form-control" name="type" placeholder="type" />
+     <input type="text" class="form-control" name="served" placeholder="served" />
+     <input type="text" class="form-control" name="menu_name" placeholder="menu_name" />
+     <input type="text" class="form-control" name="description" placeholder="description" />
+     <label >sellable</label>
+     <input type="checkbox" name="sellable" />
+     <input type="submit" value="Submit">
+    </form>
+    <br><br>
+    {{#each products}}
+       {{> product}}
+     {{/each}}
+	 {{>variation_modals}}
+  </div>
+</template>
 
 <template name="insertProductModal">
   <div id="insertProduct" class="modal fade" role="dialog">
@@ -459,7 +793,7 @@
           <h4 class="modal-title">Aggiungi prodotto</h4>
         </div>
         <div class="modal-body">
-         {{>menu}}
+         {{>categoryMenu}}
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
@@ -469,7 +803,6 @@
     </div>
   </div>
 </template>
-
 
 <template name="menu">
     {{#each menu_products}}
@@ -496,13 +829,11 @@
     {{/each}}
 </template>
 
-
-
 <template name="listItem">
    {{#each items}}
     <div class="row ">
 
-      <div class="col-xs-1 edit">
+      <div class="col-xs-1">
       <button class="delete">&times;</button>
       </div>
       
@@ -512,7 +843,7 @@
       </div>
       
         
-      <div class="col-xs-1  edit">
+      <div class="col-xs-1">
         <div class="btn-group">
         <button type="button" class="btn btn-xs btn-default lowerPrice" aria-label="Right Align"><span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span></button>
         </div>
@@ -522,13 +853,13 @@
         {{sub_total}}€
       </div>
 
-      <div class="col-xs-1  edit">
+      <div class="col-xs-1  ">
         <div class="btn-group">
           <button type="button" class="btn btn-xs btn-default raisePrice" aria-label="Right Align"><span class="glyphicon glyphicon-chevron-up" aria-hidden="true"></span></button>
         </div>  
       </div>  
          
-      <div class="col-xs-2 edit">
+      <div class="col-xs-2 ">
         <button type="button" class="btn btn-default btn-xs payItem"><span class="glyphicon glyphicon-euro" aria-hidden="true"></span> Pav</button>
       </div>
 
@@ -556,7 +887,6 @@
 
     
 </template>   
-
 
 <template name="listOrder">
   <div class="row con">
@@ -797,5 +1127,47 @@
     </div>
   </div>
 {{/each}}
+
+</template>
+
+<template name="manageUsers">
+  {{#each users}}
+  <form class="form-inline" role="form">
+    
+    <div class="well">
+      <div class="row">
+        
+        <div class="col-lg-3">        
+           <input type="text" class="form-control" value="{{username}}" name="username"  placeholder="username">
+        </div>
+        <div class="col-lg-3">        
+          {{role}}
+           <select class="form-control select" name="role">
+            <option value="admin">admin</option>
+            <option value="worker">worker</option>
+            <option value="username">user</option>
+            
+          </select> 
+        </div>
+        <div class="col-lg-3">        
+           <input type="text" class="form-control" value="{{imageUrl}}" name="imageUrl"  placeholder="imageUrl">
+        </div>
+        <div class="col-lg-1">
+          <img src="{{imageUrl}}"  class="img-responsive img-circle">
+         
+        </div>
+        <div class="col-lg-2">
+          <button class="delete">&times;</button>
+         
+        </div>
+
+         
+        
+      </div>
+   </div>
+   
+
+  </form>
+  {{/each}}
 
 </template>

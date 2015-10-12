@@ -1,17 +1,18 @@
 Products = new Mongo.Collection("products");
 Orders = new Meteor.Collection('orders');
 Schedules = new Meteor.Collection("schedules");
+Categories = new Meteor.Collection("categories");
+Prods = new Meteor.Collection("prods");
 
 
 Router.configure({ layoutTemplate: 'main'});
-
+ 
 Router.route('/order/:_id', {
 template: 'listOrder',
 data: function(){
-  var currentOrder = this.params._id;
-  return Orders.findOne({ _id: currentOrder });
-   
-}
+	var currentOrder = this.params._id;
+	return Orders.findOne({ _id: currentOrder });
+	}
 });
 Router.route('/mobileOrder/:_id', {
 template: 'modifyMobileOrder',
@@ -23,8 +24,11 @@ data: function(){
    
 }
 });
+Router.route('/manageCategoryProducts');
 Router.route('/manageProducts');
 Router.route('/manageUsers');
+Router.route('/manageCategories');
+Router.route('/categoryOrders');
 Router.route('/orders');
 Router.route('/schedules');
 Router.route('/mobileOrders');
@@ -54,11 +58,652 @@ Meteor.subscribe('workers');
 
 
 Template.home.helpers({
-imageUrl: function() {
+	imageUrl: function() {
+		return Meteor.user().imageUrl;
+		}
+});
+
+
+Template.manageCategoryProducts.helpers({
+	categories: function() {
+		return Categories.find();
+	},
+	prods: function() {
+		return Prods.find({type: this._id});
+	},
+	fieldvalue: function(){
+		return Template.parentData(1)[this];
+	},
+	checkedCategory: function(){
+		if(Template.parentData(1)["ingredients"].indexOf(this._id) > -1){
+			return "checked";
+		}
+	},
+	checkedIngredient: function(){
+		if(Template.parentData(1)["fixedIngredients"].indexOf(this._id) > -1){
+			return "checked";
+		}
+	},
+	isfinished: function(){
+		if(this.finished){
+			return "checked";
+		}
+	},
+	notIngredient: function(){
+		return this!="ingredients";
+	},
+	selectedCategoriesProducts: function(){
+		
+		return Prods.find({type:{$in:this.ingredients}});
+	}
+	
+});
+
+Template.manageCategoryProducts.events({
+	"change #selectCat": function(evt) {
+		var catId = $(evt.target).val();
+		//console.log(newValue);
+		var category = Categories.findOne(catId);
+		var fixedContainer= $("#fixed_fields");
+		var customContainer= $("#custom_fields");
+		var ingredientsContainer= $("#ingredients_field");	
+		fixedContainer.empty();
+		customContainer.empty();
+		ingredientsContainer.empty();
+
+		$(fixedContainer).append('<div><input type="text"  name="name"	 placeholder="name" /></div>');
+		
+		if(category.sellable){
+			for (var i = 0; i < category.menu_fields.length;i++){
+				if(category.menu_fields[i] != "ingredients"){
+					$(fixedContainer).append('<div><input type="text"  name="'+category.menu_fields[i]+'"	 placeholder="'+category.menu_fields[i]+'" /></div>');
+					console.log(category.menu_fields[i])
+				} else {
+					var ingredients_html='<div class="well" id="ingredients"><h4>Scegli le categorie da mostrare nel sottomenu di questo prodotto</h4>';
+					var catArray= Categories.find().fetch();
+					for(var j=0; j< catArray.length; j++){
+						ingredients_html+='<label class="checkbox-inline"><input type="checkbox" value="'+catArray[j]._id+'">'+catArray[j].name+'</label>';
+					}
+					//console.log(catArray);
+					ingredients_html+='</div>'; 
+					$(ingredientsContainer).append(ingredients_html);
+				}
+				
+			}
+		}
+		
+		for (var i = 0; i < category.fields.length; i++){
+			$(customContainer).append('<div><input type="text"  name="'+category.fields[i]+'"	 placeholder="'+category.fields[i]+'" /></div>');
+			console.log(category.fields[i]);	
+		}
+	},
+	"submit #add_category_product": function(evt) {
+		 evt.preventDefault();
+		  var element={};
+		 $("#add_category_product input[type=text]").each(function(){
+			var name= $(this).attr("name");
+			var val= $(this).val();
+			element[name]=val;
+		});
+		
+		var selected = [];
+		$('#ingredients input:checked').each(function() {
+			console.log($(this).val());
+			selected.push($(this).val());
+		});
+		element["ingredients"]= selected;
+		element["fixedIngredients"]=[];
+		element["type"] = $("#selectCat").val();
+		element["finished"] = false;
+		console.log(element);
+		Prods.insert(element);
+	},
+	'keyup .editableField': function(){
+	var prodId = $(event.target).attr('prodid');
+	var name = $(event.target).attr('name');
+	
+	var prod_elem = $(event.target).val();
+	
+	var element={};
+	element[name]=prod_elem;
+	Prods.update({ _id: prodId }, {$set: element});
+	},
+	"click .toggle-finished": function () {
+	// Set the checked property to the opposite of its current value
+	Prods.update(this._id, {
+	$set: {finished: ! this.finished}
+	});
+	},
+	"click .deleteProduct": function () {
+	var confirm = window.confirm("Delete product "+this.name+"?");
+	if(confirm){
+	  Prods.remove(this._id);
+	}
+	},
+	"click .addCategoryToIngredients" : function(){
+	var checked= $(event.target).is(':checked');
+	var category_id= this._id;
+	var prod_id= $(event.target).attr("prodid");
+	
+	console.log(checked);
+	console.log(prod_id);
+	console.log(category_id);
+	
+	if(checked) {
+	 
+		Prods.update(prod_id, {
+		$push: { ingredients: category_id }}); 
+	} else {
+		
+		Prods.update(prod_id, {
+		$pull: { ingredients: category_id }}); ;
+		}
+	//Meteor.call("updateCheckedIngredients",prod_id,ingredient_id,checked);
+	
+	},
+	"click .addFixedIngredient" : function(){
+	var checked= $(event.target).is(':checked');
+	var prod_id= this._id;
+	var parent_prod_id= $(event.target).attr("prodid");
+	
+	console.log(checked);
+	console.log(prod_id);
+	console.log(parent_prod_id);
+	
+	if(checked) {
+	 
+		Prods.update(parent_prod_id, {
+		$push: { fixedIngredients: prod_id }}); 
+	} else {
+		
+		Prods.update(parent_prod_id, {
+		$pull: { fixedIngredients: prod_id }}); ;
+		}
+	
+	}
+});
+
+/*Template.manageCategoryProducts.rendered = function() {
+    if(!this._rendered) {
+      this._rendered = true;
+	  var cat = $("#selectCat option:selected").val();
+      console.log(cat);
+      console.log('Template onLoad');
+    }
+}
+*/
+
+Template.manageCategories.events({
+"click .add_new_field": function (e) {
+	e.preventDefault();
+	var wrapper			= $("#new_fields_container"); //Fields wrapper
+	$(wrapper).append('<div><input type="text" class="form-control" name="mytext[]"	 placeholder="insertfieldname" /><a href="#" class="remove_field">Remove</a></div>'); //add input box
+  
+  },
+  
+  "click .remove_field": function (e) {
+	e.preventDefault();
+	//console.log($(this));
+	$(event.target).parent('div').remove();
+  },
+  "click .update_remove_field": function (e) {
+	e.preventDefault();
+	var name = $(event.target).attr('name');
+	var selectedCat = $(event.target).attr('category');
+	//var attr = $(event.target).val();
+	console.log(selectedCat);
+	var element = {};
+	element["fields"]= name;
+	Categories.update(	selectedCat ,	{ $pull: element }	);
+	},
+   "click .add_field": function (e) {
+	e.preventDefault();
+	var name = $(event.target).prev().val();
+	var selectedCat = this._id;
+	//var attr = $(event.target).val();
+	console.log(selectedCat);
+	var element = {};
+	element["fields"]= name;
+	
+	
+	Categories.update(selectedCat ,{ $push: element });
+	$(event.target).prev().val("");
+  },
+   "click .remove_cat": function (e) {
+	e.preventDefault();
+	var confirm = window.confirm("Delete this category?");
+	if(confirm){
+		Meteor.call("removeCategory",this._id);
+	}
+  },
+  "submit #new-cat": function (e){
+	  e.preventDefault();
+	/**
+	*le categorie hanno sempre nome e sellable
+	*se sellable è true vengono aggiunti automaticamente i campi obbligatori alla rappresentazione sul menu
+	*ogni prodotto avrà anche il campo finished per la gestione del magazzino
+	*
+	*
+	*
+	**/
+	var fields = [];
+	var name = event.target.name.value;
+	var sellable = event.target.sellable.checked;
+	$("#new-cat input[type=text]").each(function(){
+	if($(this).attr('name') != "name" && $(this).val() != "" ){
+		fields.push($(this).val()); 
+	}
+	
+	});
+	
+	if (sellable){
+	var menu_fields = ["menu_name","price","image","description","ingredients"];
+	var category = {
+		name: name,
+		sellable: sellable,
+		fields: fields,
+		menu_fields: menu_fields,
+		createdAt: new Date()
+		}	
+	} else {
+		var category = {
+		name: name,
+		sellable: sellable,
+		fields: fields,
+		createdAt: new Date()
+		}		
+	}
+	Categories.insert(category);
+	
+	$("#new_cat_name").val("");
+	$("#new_fields_container").empty();
+  },
+  "click .toggle-sellable": function () {
+  // Set the checked property to the opposite of its current value
+  var menu_fields = [];
+  if($(event.target).is(':checked')){
+	  menu_fields = ["menu_name","price","image","description","ingredients"];	
+  }
+  
+  Categories.update(this._id, {
+	$set: {sellable: ! this.sellable, menu_fields:menu_fields}
+  });
+  
+}
  
-  return Meteor.user().imageUrl;
+});
+
+Template.manageCategories.helpers({
+	categories: function() {
+		return Categories.find();
+	},
+	'issellable': function(){
+	var issellable = this.sellable;
+	if(issellable){
+		return "checked";
+	} else {
+		return "";
+	}
+	}
+})
+
+Template.categoryMenu.helpers({
+ 
+  'sellable_categories': function(){
+  
+	return Categories.find({sellable:true});
+	
+  },
+  'products' : function(){
+	  var catId= Template.parentData(0)._id;
+	return Prods.find({ finished: false, type: catId}, {sort: {name: 1}});
+
+  },
+  'firstCategory':function(){
+	  var firstCatId = Categories.find({sellable:true}).fetch()[0]._id;
+	  
+	  if(firstCatId==this._id){
+		  return "active";
+	  }
+  }
+
+});
+
+Template.categoryMenu.events({
+"click .addVariation": function(){
+	var prodName=$(event.target).attr("name"); 
+	var prodId = $(event.target).val();
+	if($(event.target).is(':checked')){
+		$("#variedProduct").append("<p style ='display: inline-block;' prod="+prodId+"> +"+prodName+"</p>");	
+	} else {
+		$('p[prod='+prodId+']').remove();
+		//$( "p[prod="+prod+"]" ).remove();
+		
+	}
+	
+},
+"click .add": function () {
+	$('#variations').empty();
+	$('#variedProduct').empty();
+  
+  //var ordId= Template.parentData(0)._id;
+  
+  var product_id = this._id;
+  //console.log(this.ingredients.length);
+  if(this.ingredients.length > 0){
+	  $('#variations').append('<h3>Variazioni:</h3>');
+	  for(var i = 0; i< this.ingredients.length;i++){
+		  var name= Categories.findOne(this.ingredients[i],{fields: {'name':1}}).name;
+		  var prods = Prods.find({type: this.ingredients[i]},{fields: {'name':1}} ).fetch();
+		  console.log(name);
+		  var htmlstring="<div class='well'><h4>"+name+":</h4>";
+		  for(var j=0; j< prods.length;j++){
+			  var checked="";
+			  if($.inArray(prods[j]._id,this.fixedIngredients)>=0){
+				  checked="checked"
+			  }
+			  htmlstring+='<label class="checkbox-inline"><input type="checkbox" class="addVariation" value="'+prods[j]._id+'" name="'+prods[j].name+'" '+checked+'>'+prods[j].name+'</label>';
+		  }
+		  htmlstring+="</div>"
+		  $('#variations').append(htmlstring);
+		  
+	  }
+	  
+	  for(var k = 0; k< this.fixedIngredients.length; k++){
+		var fixedProd = Prods.findOne(this.fixedIngredients[k],{fields: {'name':1}} );
+		$("#variedProduct").append("<p style ='display: inline-block;' prod="+fixedProd._id+"> +"+fixedProd.name+"</p>");
+		
+	  }
+	  $('#variations').prepend('<br><button type="button" class="btn btn-info addComposedProduct" prodId="'+this._id+'">Aggiungi</button>');
+	  
+	return; 
+  }
+
+  var selectedOrder = Session.get('selectedOrder');
+  if(selectedOrder != null){
+	var cursor = Orders.find({	$and : [  {items: {$elemMatch: {product_id: this._id}}},  {_id: selectedOrder }	 ]});
+	//looks for orders with selectedOrder = id that has product_id in the items array
+	//in other words if the order has already that product
+	
+	if(cursor.count()>0){
+	  Meteor.call('addQuantity',selectedOrder, product_id, this.price);
+   }else{
+
+	  var item = {
+	  product_id:  this._id,
+	  name: this.name,
+	  volume: this.volume,
+	  price:  parseFloat(this.price),
+	  image:  this.image, 
+	  quantity: 1,
+	  menu_name: this.menu_name,
+	  sub_total: parseFloat(this.price)
+	  };
+	
+	  
+	  Orders.update(selectedOrder, {
+		$push: { items: item },
+		$inc: { bill: parseFloat(item.price) }
+	  
+	  });
+
+	}
+
+  }
+  else {
+	var confirm = window.confirm("didn't choose an order");
+  
+  if(confirm){
+	Router.go('categoryOrders');	
+  }
+
+  }
+  
+},
+"click .addComposedProduct": function(){
+	var selectedOrder = Session.get('selectedOrder');
+	console.log("selord"+selectedOrder);
+	var prodId=$(event.target).attr("prodId");
+	console.log(prodId);
+	var product = Prods.findOne(prodId);
+	product.menu_name+=$( "div #variedProduct" ).text();
+	if(selectedOrder != null){
+		var item = {
+		  product_id:  product._id,
+		  name: product.name,
+		  volume: product.volume,
+		  price:  parseFloat(product.price),
+		  image:  product.image, 
+		  quantity: 1,
+		  menu_name: product.menu_name,
+		  sub_total: parseFloat(product.price)
+		  };
+		
+		  
+		  Orders.update(selectedOrder, {
+			$push: { items: item },
+			$inc: { bill: parseFloat(item.price) }
+		  
+		  });
+
+	
+
+	}else {
+	var confirm = window.confirm("didn't choose an order");
+		if(confirm){	
+		Router.go('categoryOrders');		
+		}
+	}
 }
 });
+
+Template.addCategoryOrder.events({
+  'submit form': function(event){
+	event.preventDefault();
+	var guestName = $('[name=guestName]').val();
+	var tableNum = $('[name=tableNum]').val();
+	
+	Orders.insert({
+		guestName: guestName,
+		tableNum: tableNum,
+		createdAt: new Date(),
+		bill: 0.0,
+		payed: false,
+		items: [],
+		payedItems: [],
+		orderedBy: Meteor.user().username,
+		state: "viewed"
+	});
+	$('[name=guestName]').val('');
+	$('[name=tableNum]').val('');
+  }
+});
+
+Template.categoryOrders.helpers({
+  'orders': function(){
+	return Orders.find({payed : false}, {sort: {guestName: 1}});
+  },
+  'mod4': function (ind) {
+  return ind % 4 === 0
+  },
+  'grouped_orders': function () {
+	all = Orders.find({payed : false}, {sort: {createdAt: -1}}).fetch();
+	chunks = [];
+	size = 3;
+	while (all.length > size) {
+		chunks.push({ row: all.slice(0, size)});
+		all = all.slice(size);
+	}
+	chunks.push({row: all});
+	
+	return chunks;
+  }
+
+});
+
+Template.categoryOrders.events({
+"click .selectOrder": function () {
+  Session.set('selectedOrder', this._id);
+  //console.log(this._id);
+
+	  
+},
+
+});
+
+Template.categoryOrderItem.helpers({
+	"minutesAgo": function(){
+		
+		var today = new Date();
+	
+		var diffMs = (today - this.createdAt); // milliseconds between now & Christmas
+		var diffDays = Math.round(diffMs / 86400000); // days
+		var diffHrs = Math.round((diffMs % 86400000) / 3600000); // hours
+		var diffMins = Math.round(((diffMs % 86400000) % 3600000) / 60000); // 
+		var result= "Creato ";
+		if(diffDays>0){
+			result+=diffDays+"g ";
+		}
+		if(diffHrs>0){
+			result+=diffHrs+"h ";
+		}
+		if(diffMins>=0){
+			result+=diffMins+"m ";
+		}
+		
+		result+="fa";
+		
+		
+		return result;
+	}
+})
+
+Template.categoryOrderItem.events({
+'click .editOrder' : function(event){
+
+  var order = $(event.target).attr('name');
+
+  
+  var selector = "#"+order+" .edit";
+	console.log(selector);
+  $(selector).fadeToggle();
+},
+ "click .deleteOrder": function (){
+  var confirm = window.confirm("Delete the order: "+this.guestName +" Tab: "+this.tableNum+" ?");
+  if(confirm){
+	var selectedOrder = this._id;
+	console.log(selectedOrder);
+  
+	  
+	Meteor.call('remOrder',selectedOrder);
+  }
+},
+'keyup .form-control': function(){
+var order = this._id;
+var name = $(event.target).attr('name');
+var attr = $(event.target).val();
+
+Meteor.call('updateOrder',order,name,attr) 
+console.log("update "+name+" "+attr+" "+order);
+},
+/*'focusout .focus' : function(){
+   console.log("lost");
+$(".edit").hide();
+}*/
+"click .payBill": function (){
+  var selectedOrder = this._id;
+  
+
+  var order = Orders.findOne(selectedOrder);
+  //var order = Orders.find({_id:"TGmazfgvzHwvBtvBW"}).fetch()
+  //alert(order.bill);
+  var confirm = window.confirm("Sono "+order.bill+" euri, bello");
+  
+  if(confirm){
+	Meteor.call('payBill',selectedOrder); 
+	//Router.go('orders');	   
+  }
+}
+
+});
+
+Template.categoryListItem.events({
+"click .delete": function (event, template){
+  var selectedOrder= Template.parentData(0)._id;
+  var prod_id= this.product_id;
+  var quantity = parseInt(this.quantity);
+  var confirm = window.confirm("Delete one "+this.name+" from this order ?");
+  if(confirm){
+		if (quantity > 1){
+		  Meteor.call('remQuantity',selectedOrder, prod_id, this.price);
+
+		}else{
+
+		  Meteor.call('remItem',selectedOrder, prod_id, this.price);
+		}
+	}
+},
+"click .payItem": function	(event, template){
+   var selectedOrder= Template.parentData(0)._id;
+   var num = Orders.findOne( selectedOrder).items.length;
+	var item = {
+	  product_id:  this.product_id,
+	  name: this.name,
+	  menu_name: this.menu_name,
+	  price:  this.price,
+	  image:  this.image, 
+	  quantity: 1
+	  };
+  //var quantity = parseInt(this.quantity);
+  
+  var confirm = window.confirm("Sono "+parseFloat(this.price)+" euri, bello");
+  if(confirm){
+	
+
+	Meteor.call('payItem',selectedOrder, item);
+	if (this.quantity > 1){
+	  Meteor.call('remQuantity',selectedOrder, this.product_id, this.price);
+
+	}else{
+	  Meteor.call('remItem',selectedOrder, this.product_id, this.price);
+	  
+	}
+
+	 
+  if (num == 1){
+		
+		Orders.update(selectedOrder,{ $set: {payed:true}});
+		Router.go('orders');
+	  }
+
+
+  }
+},
+"click .lowerPrice": function (){
+var ordId= Template.parentData(0)._id;
+ 
+  
+  Meteor.call('modifyPrice',
+			 ordId,
+			  this.product_id,
+			  -1);
+  
+},
+"click .raisePrice": function (){
+	var ordId= Template.parentData(0)._id;
+  Meteor.call('modifyPrice',
+			  ordId,
+			  this.product_id,
+			  1);
+
+},
+
+});
+
+
+
+
+
 
 Template.manageUsers.helpers({
 users: function () {
@@ -75,7 +720,7 @@ Template.manageUsers.events({
 	console.log("delete " + this._id)
   
   }
-},    
+},	  
 'keyup .form-control': function(){
 var user = this._id;
 var name = $(event.target).attr('name');
@@ -105,7 +750,7 @@ food_ingredient: function () {
 	var selectedProduct=Session.get("selectedProduct"),
 	ingredient_id=this._id;
 	
-	var cursor = Products.find({  $and : [  {ingredients: {$elemMatch: {_id:ingredient_id}}},  {_id: selectedProduct }  ]});
+	var cursor = Products.find({  $and : [	{ingredients: {$elemMatch: {_id:ingredient_id}}},  {_id: selectedProduct }	]});
 
 	
 	if(cursor.count()>0){
@@ -118,7 +763,7 @@ food_ingredient: function () {
 	var selectedProduct=Session.get("selectedProduct"),
 	ingredient_id=this._id;
 	
-	var cursor = Products.find({  $and : [  {ingredients: {$elemMatch: {_id:ingredient_id, selected:true}}},  {_id: selectedProduct }  ]});
+	var cursor = Products.find({  $and : [	{ingredients: {$elemMatch: {_id:ingredient_id, selected:true}}},  {_id: selectedProduct }  ]});
 
 	
 	if(cursor.count()>0){
@@ -134,14 +779,14 @@ food_ingredient: function () {
 Template.variation_modals.events({
 "click .show" : function(){
 	
-    if($(event.target).is(':checked')) {
+	if($(event.target).is(':checked')) {
 		var ingredient={
 			_id:this._id,
 			name:this.name,
 			selected:$("#sel"+this._id).is(':checked')
 			
 		};
-       
+	   
 	   Products.update(Session.get("selectedProduct"), {
 	   $push: { ingredients: ingredient }}); 
 	} else {
@@ -265,7 +910,7 @@ Template.product.events({
   if(confirm){
   Products.remove(this._id);
   }
-},    
+},	  
 'keyup .form-control': function(){
 var documentId = this._id;
 var name = $(event.target).attr('name');
@@ -343,7 +988,7 @@ Template.orders.events({
   
   if(confirm){
 	Meteor.call('payBill',selectedOrder); 
-	Router.go('orders');       
+	Router.go('orders');	   
   }
 }
 
@@ -392,7 +1037,7 @@ Template.menu.events({
   var product_id = this._id;
 
   if(selectedOrder != null){
-	var cursor = Orders.find({  $and : [  {items: {$elemMatch: {product_id: this._id}}},  {_id: selectedOrder }  ]});
+	var cursor = Orders.find({	$and : [  {items: {$elemMatch: {product_id: this._id}}},  {_id: selectedOrder }	 ]});
 	//looks for orders with selectedOrder = id that has product_id in the items array
 	//in other words if the order has already that product
 	
@@ -475,7 +1120,7 @@ Template.listItem.events({
 	
   }
 },
-"click .payItem": function  (event, template){
+"click .payItem": function	(event, template){
    var selectedOrder = $(event.target).closest('div .panel-body').attr('id');
 
  
@@ -619,7 +1264,7 @@ Template.schedules.events({
 	  Schedules.insert(daySchedule);
  
 	}
-  }  
+  }	 
   Router.go('schedules'); 
 
 }
@@ -716,7 +1361,7 @@ Template.modifyMobileOrder.helpers({
 
 Template.listItemMobile.events({
   "click .delete": function (event, template){
-  var selectedOrder = Session.get("selectedOrder");  
+  var selectedOrder = Session.get("selectedOrder");	 
   var prod_id= this.product_id;
   var quantity = parseInt(this.quantity);
   var confirm = window.confirm("Delete one "+this.name+" from this order ?");
@@ -800,7 +1445,7 @@ Template.product_variation_modals.helpers({
 	//only retrieves products with ingredients to build the modals
 	'products' : function(){
 		
-		return Products.find( { $and: [  { ingredients: { $exists: true } },{ $where: "this.ingredients.length > 0" } ] } );
+		return Products.find( { $and: [	 { ingredients: { $exists: true } },{ $where: "this.ingredients.length > 0" } ] } );
 	}
 });
 
@@ -856,7 +1501,7 @@ Meteor.methods({
 	{ 
 	  $inc: { "items.$.sub_total" : parseFloat(price) }
 	}
-  )        
+  )		   
 },
 
 'remQuantity': function(selectedOrder, product_id,price){
@@ -871,7 +1516,7 @@ Meteor.methods({
   Orders.update(
 	{ _id: selectedOrder , "items.product_id": product_id },
 	{ $inc: { "items.$.quantity" : -1 } }
-  )  
+  )	 
   
   Orders.update(
 	{ _id: selectedOrder , "items.product_id": product_id },
@@ -883,7 +1528,7 @@ Meteor.methods({
 'remItem': function(selectedOrder, product_id,price){
 
   Orders.update(selectedOrder,{ $pull: { items: { product_id: product_id } } },{ multi: false });
-  Orders.update(selectedOrder,{$inc: { bill: -(price) }},{ multi: false });    
+  Orders.update(selectedOrder,{$inc: { bill: -(price) }},{ multi: false });	   
 },
 
 'payBill': function(selectedOrder){
@@ -917,7 +1562,7 @@ Meteor.methods({
   Orders.update(selectedOrder, {
 		$push: { payedItems: item },
 		//$inc: { bill: parseFloat(item.price) }
-	  });        
+	  });		 
 },
 
 'modifyPrice': function(selectedOrder, product_id, mod){
@@ -932,12 +1577,8 @@ Meteor.methods({
 },
 
 'remOrder': function(selectedOrder){
-  /*
-   Orders.remove(
-	{ _id: selectedOrder },
-	{ }
 
-  );*/
+   Orders.remove(selectedOrder);
 			 
 },
 
@@ -982,6 +1623,10 @@ Orders.update(order, {$set: element});
 	}
    );
 	
+},
+
+"removeCategory": function(cat_id){
+	 Categories.remove(cat_id);
 }
 	
 	 

@@ -11,7 +11,7 @@ pagamento di piu item cn sommatore
 
 
 update
-controlla eliminazione ordine
+
 
 aggiutsa prodotti che non sommano
 cambia id anche al menu modal
@@ -21,8 +21,17 @@ mobile
 aggiungi tempo da quando è stato ordinato e nome cameriere
 aggiungi viewed, ready
 
+Gestione Categorie- 
+	rendi nome cat univoco
+	edit nome cat
+	
+	modifica finished
+	controlla price sia sempre un numero
+	
+	categorymenu-event add
 
 
+elimina tutti i closest e rimpiazza con ..\
 
 
 
